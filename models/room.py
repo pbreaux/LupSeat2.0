@@ -1,12 +1,26 @@
 import yaml
 
 def str_to_int(char):
-    # Input: 'a', 'b', 'c', '1', '2', '3'
+    '''Convert row char to row number
+    Args:
+        row (char): ('a', 'b', '1', '2')
+
+    Returns:
+        int:  row number (1 to max_row)
+    '''
     if char.isalpha():
         return ord(char.lower()) - ord('a') + 1
     return int(char)
 
 def int_to_str(row, num_flag):
+    '''Convert row number to row char
+    Args:
+        row (int): 0 to max_row-1
+        num_flag (bool): Flag whether to convert to alpha or number.
+
+    Returns:
+        int: row char ('a', 'b', '1', '2')
+    '''
     # Input: 0 to max_rows-1
     if num_flag:
         return str(row + 1)
@@ -154,6 +168,7 @@ class Room:
                     row_chr = int_to_str(row, self.num_row_spec)
                     col_chr = int_to_str(col, True)
                     sid = self.seats[row][col].sid
+
                     outfile.write("{}{}: {}\n".format(row_chr, col_chr, sid))
         print("Finished saving to file: {}".format(filepath))
 
@@ -229,7 +244,8 @@ class Seat:
 
 class SeatGroups:
     """SeatGroups define a contiguous seats in a row. 
-    This helps determine how to place empty seats in order to minimize student chunks"""
+    This helps determine how to place empty seats in order to minimize student chunks
+    """
     def __init__(self):
         self.chunk_size = 0
         self.chunk_begin_indices = (0, 0)

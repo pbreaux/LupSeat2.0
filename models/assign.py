@@ -3,8 +3,7 @@ from models.student import *
 from models.room import *
 
 def choose_seat(seat_inds):
-    '''Randomly choose seat from list and remove it.
-    '''
+    '''Randomly choose seat from list and remove it.'''
     ele = random.choice(seat_inds)
     seat_inds.remove(ele)
     return ele
@@ -27,11 +26,15 @@ def assign_seats(rm, stdts):
 
     carry_over_stdts = []
     for param in params:
+        # Get list of students and available seats
         spec_stdts = Student.get_specified_students(stdts, left_hand=param['left_hand'], special_needs=param['special_needs'])
         seat_inds = rm.get_spec_seats(left_hand=param['left_hand'], special_needs=param['special_needs'])
 
+        # Add list of students with previously unseated students
         spec_and_carry_stdts = carry_over_stdts + spec_stdts
         carry_over_stdts = []
+
+        # Add student to room
         for index, stdt_id in enumerate(spec_and_carry_stdts):
             if len(seat_inds) == 0:
                 carry_over_stdts = spec_and_carry_stdts[index:]

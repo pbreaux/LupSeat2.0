@@ -71,7 +71,7 @@ class Student:
         return json.dumps(self.__dict__)
 
     def __repr__(self):
-        return json.dumps(self.__dict__)
+        return str(self)
 
     @staticmethod
     def get_specified_students(stdts, left_hand=False, special_needs=False):
@@ -85,9 +85,9 @@ class Student:
             list[int]: list of specified student ids
         """
         spec_stdts = []
-        for stdt in stdts.items():
-            if stdt[1].left_hand == left_hand and stdt[1].special_needs == special_needs:
-                spec_stdts.append(stdt[1].sid)
+        for stdt in stdts.values():
+            if stdt.left_hand == left_hand and stdt.special_needs == special_needs:
+                spec_stdts.append(stdt.sid)
 
         return spec_stdts
 
