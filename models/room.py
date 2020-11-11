@@ -1,30 +1,44 @@
-import yaml
+import io
 
-def str_to_int(char):
+def chr_to_int(char):
     '''Convert row char to row number
     Args:
-        row (char): ('a', 'b', '1', '2')
+        row (char): ('a', 'b')
 
     Returns:
         int:  row number (1 to max_row)
     '''
-    if char.isalpha():
-        return ord(char.lower()) - ord('a') + 1
-    return int(char)
+    return ord(char.lower()) - ord('a') + 1
 
-def int_to_str(row, num_flag):
+def int_to_chr(row):
     '''Convert row number to row char
     Args:
         row (int): 0 to max_row-1
-        num_flag (bool): Flag whether to convert to alpha or number.
 
     Returns:
-        int: row char ('a', 'b', '1', '2')
+        int: row char ('a', 'b')
     '''
-    # Input: 0 to max_rows-1
-    if num_flag:
-        return str(row + 1)
     return chr(ord('a') + row)
+
+def seat_inds(seat):
+    '''Get seat indices'''
+    if not seat[0].isalpha():
+        raise Exception("Seat {} not formatted correctly".format(seat))
+    if not seat[1:].isnumeric():
+        raise Exception("Seat {} not formatted correctly".format(seat))
+
+    cur_row = chr_to_int(seat[0])
+    cur_col = int(seat[1:])
+    return (cur_row, cur_col)
+
+def process_str(raw_str):
+    '''Removes all whitespace and makes lowercase. Removes any trailing colons'''
+    if raw_str == '':
+        return ''
+    if raw_str[-1] == ':':
+        raw_str = raw_str[:-1]
+    return "".join(raw_str.lower().split())
+
 
 class Room:
     """Contains grid representation of room containing seat instances"""
@@ -33,8 +47,6 @@ class Room:
         self.max_col = 1
         self.seats = []
         self.seat_groups = []
-        # Describes whether rows are described by numbers or letters
-        self.num_row_spec = True
 
     def __str__(self):
         output = ''
@@ -60,95 +72,126 @@ class Room:
         Returns:
             Room: Room instance with correct size, seats & seat qualities specified
         """
-        with open(filepath, 'r') as yamlfile:
-            yaml_raw = yamlfile.read()
-        yaml_parsed = yaml.load(yaml_raw, Loader=yaml.SafeLoader)
+        with open(filepath, 'r') as f:
+            f_raw = f.read()
 
         rm = cls()
-        rm._update_size(yaml_parsed)
-        rm._add_seats(yaml_parsed)
-        rm._add_seat_specifiers(yaml_parsed)
+        rm._update_size(f_raw)
+        rm._add_seats(f_raw)
+        rm._add_seat_specifiers(f_raw)
         return rm
 
-    def _update_size(self, yaml_parsed):
+    def _update_size(self, f_raw):
         """Gets dimensions of room (during instantiation)"""
-        for block in yaml_parsed.items():
-            # Find whether rows are specified by letter or number
-            if block[1]['row'].isalpha():
-                self.num_row_spec = False
+        seat_flag = False
+        for line in f_raw.splitlines():
+            line = process_str(line)
+            if line == "seats" or line == "seat":
+                seat_flag = True
+            elif line == "specifiers" or line == "specifier":
+                seat_flag = False
+            elif seat_flag:
+                # Skip if empty line
+                if line == "":
+                    continue
 
-            cur_row = str_to_int(block[1]['row'])
-            cur_cols = str(block[1]['col']).replace(' ', '').split(',')
+                # Otherwise check if seat range is new max
+                for seat_range in line.split(','):
+                    # Skip if empty range
+                    if seat_range == '':
+                        continue
 
-            for cur_col_range in cur_cols:
-                cur_col = int(cur_col_range.split('-')[-1])
-                if cur_row > self.max_row:
-                    self.max_row = cur_row
-                if cur_col > self.max_col:
-                    self.max_col = cur_col
+                    cur_row, cur_col = seat_inds(seat_range.split('-')[-1])
 
-    def _add_seats(self, yaml_parsed):
+                    if cur_row > self.max_row:
+                        self.max_row = cur_row
+                    if cur_col > self.max_col:
+                        self.max_col = cur_col
+
+    def _add_seats(self, f_raw):
         """Adds seats to room (during instantiation)"""
         # Row major
         for row in range(self.max_row):
             self.seats.append([None] * self.max_col)
 
+        seat_flag = False
+        for line in f_raw.splitlines():
+            line = process_str(line)
+            if line == "seats" or line == "seat":
+                seat_flag = True
+            elif line == "specifiers" or line == "specifier":
+                seat_flag = False
+            elif seat_flag:
+                # Skip if empty line
+                if line == "":
+                    continue
 
-        for block in yaml_parsed.items():
-            cur_row = str_to_int(block[1]['row'])
-            cur_cols = str(block[1]['col']).replace(' ', '').split(',')
-            for cur_col_range in cur_cols:
-                for cur_col in self._get_col_inds(cur_col_range):
-                    self.seats[cur_row-1][cur_col-1] = Seat()
+                # Add seats per each range
+                for row_range in line.split(','):
+                    # Skip if empty range
+                    if row_range == '':
+                        continue
 
-    def _add_seat_specifiers(self,  yaml_parsed):
+                    # Add seat
+                    cur_row = chr_to_int(row_range[0])
+                    for cur_col in self._get_col_inds(row_range):
+                        self.seats[cur_row-1][cur_col-1] = Seat()
+
+                    # Populate seat_groups
+                    beg_seat = self._get_col_inds(row_range).start
+                    end_seat = self._get_col_inds(row_range).stop
+                    inds = ((cur_row, beg_seat), (cur_row, end_seat))
+                    self.seat_groups.append(SeatGroups(inds))
+
+    def _add_seat_specifiers(self, f_raw):
         """Adds seat features to each seat (during instantiation)"""
-        for block in yaml_parsed.items():
-            cur_row = str_to_int(block[1]['row'])
-            for specifiers in block[1]['specifiers']:
-                cur_cols = str(specifiers['seat-col']).replace(' ', '').split(',')
+        spec_flag = False
+        for line in f_raw.splitlines():
+            line = process_str(line)
+            if line == "specifiers" or line == "specifier":
+                spec_flag = True
+            elif line == "seats" or line == "seat":
+                spec_flag = False
+            elif spec_flag:
+                # Skip if empty line
+                if line == "":
+                    continue
 
-                # Gather specifier flags
-                (left_handed, special_needs, broken) = self._specifier_flags(specifiers)
+                # CHeck if line formatted correctly
+                if len(line.split(':')) != 2:
+                    raise Exception("Line not formatted correctly: {}".format(line))
 
-                # Add flags to all specified seats
-                for cur_col_range in cur_cols:
-                    for cur_col in self._get_col_inds(cur_col_range):
-                        if self.seats[cur_row-1][cur_col-1] == None:
-                            raise Exception("Adding quality to seat that doesn't exist")
-                        else:
-                            self.seats[cur_row-1][cur_col-1].left_handed = left_handed
-                            self.seats[cur_row-1][cur_col-1].special_needs = special_needs
-                            self.seats[cur_row-1][cur_col-1].broken = broken
+                # Get seat indices
+                cur_row, cur_col = seat_inds(line.split(':')[0])
+                if self.seats[cur_row-1][cur_col-1] == None:
+                    raise Exception("Adding quality to seat that doesn't exist {}".format(line))
+
+                # Apply flag to seat
+                flags = line.split(':')[1]
+                for flag in flags:
+                    if flag == 'b':
+                        self.seats[cur_row-1][cur_col-1].broken = True
+                    if flag == 'l':
+                        self.seats[cur_row-1][cur_col-1].left_handed = True
+                    if flag == 's':
+                        self.seats[cur_row-1][cur_col-1].special_needs = True
 
     def _get_col_inds(self, col_range):
         """Gets column indices in iterator form"""
         if '-' in col_range:
-            begin = int(col_range.split('-')[0])
-            end = int(col_range.split('-')[1])
-            return range(begin, end+1)
-        elif str.isdigit(col_range):
-            return range(int(col_range), int(col_range)+1)
+            beg_seat = col_range.split('-')[0]
+            end_seat = col_range.split('-')[1]
+            if beg_seat[0] != end_seat[0]:
+                raise Exception("Non matching row char {} and {}".format(beg_seat[0], end_seat[0]))
+
+            beg = int(beg_seat[1:])
+            end = int(end_seat[1:])
+            return range(beg, end+1)
+        elif str.isdigit(col_range[1:]):
+            return range(int(col_range[1:]), int(col_range[1:])+1)
         else:
             raise Exception("Unknown col range format: {}".format(cur_col_range))
 
-    def _specifier_flags(self, specifiers):
-        """Gather specifier flags for each feature"""
-        left_handed, special_needs, broken = (False, False, False)
-        for flag in specifiers.keys():
-            if flag == 'seat-col':
-                continue
-            elif flag == 'left-handed':
-                left_handed = specifiers[flag]
-                pass
-            elif flag == 'special-needs':
-                special_needs = specifiers[flag]
-                pass
-            elif flag == 'broken':
-                broken = specifiers[flag]
-            else:
-                raise Exception("Unknown flag: {}".format(flag))
-        return (left_handed, special_needs, broken)
 
     def save_file(self, filepath):
         """Saves seats with student info to a file
@@ -165,11 +208,12 @@ class Room:
                     if self.seats[row][col].sid == -1:
                         continue
 
-                    row_chr = int_to_str(row, self.num_row_spec)
-                    col_chr = int_to_str(col, True)
+                    row_chr = int_to_chr(row)
+                    col_chr = str(col + 1)
                     sid = self.seats[row][col].sid
 
                     outfile.write("{}{}: {}\n".format(row_chr, col_chr, sid))
+
         print("Finished saving to file: {}".format(filepath))
 
     def add_student(self, indices, sid):
@@ -220,18 +264,6 @@ class Room:
 
         return match_seats
 
-    def split_to_groups():
-        for row in range(self.max_row):
-            current_group_size = 0
-
-            for col in range(self.max_col):
-                if self.seats[row][col] != None and self.seats[row][col]:
-                    pass
-                    # TODO
-                    # current_group_size += 1
-                    # self.seat_groups.append()
-
-
 class Seat:
     """Seat contains features of the seat"""
     def __init__(self):
@@ -246,9 +278,14 @@ class SeatGroups:
     """SeatGroups define a contiguous seats in a row. 
     This helps determine how to place empty seats in order to minimize student chunks
     """
-    def __init__(self):
+    def __init__(self, inds=None):
         self.chunk_size = 0
         self.chunk_begin_indices = (0, 0)
+        
+        if inds != None:
+            self.chunk_size = inds[1][1] - inds[0][1]
+            self.chunk_begin_indices = inds[0]
+        
 
     def split():
         # Split SeatGroups into 2 seatgroups. Split near center, where not specialized
