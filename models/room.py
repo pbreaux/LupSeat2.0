@@ -143,6 +143,8 @@ class Room:
                     inds = ((cur_row, beg_seat), (cur_row, end_seat))
                     self.seat_groups.append(SeatGroups(inds))
 
+        self.seat_groups.sort(key=(lambda x : x.chunk_size), reverse=True)
+
     def _add_seat_specifiers(self, f_raw):
         """Adds seat features to each seat (during instantiation)"""
         spec_flag = False
@@ -171,6 +173,7 @@ class Room:
                 for flag in flags:
                     if flag == 'b':
                         self.seats[cur_row-1][cur_col-1].broken = True
+                        # If broken, need to split seats
                     if flag == 'l':
                         self.seats[cur_row-1][cur_col-1].left_handed = True
                     if flag == 's':
@@ -280,21 +283,29 @@ class SeatGroups:
     """SeatGroups define a contiguous seats in a row. 
     This helps determine how to place empty seats in order to minimize student chunks
     """
-    def __init__(self, inds=None):
-        self.chunk_size = 0
-        self.chunk_begin_indices = (0, 0)
+    def __init__(self, inds):
+        self.chunk_size = inds[1][1] - inds[0][1]
+        self.chunk_begin_indices = inds[0]
         
-        if inds != None:
-            self.chunk_size = inds[1][1] - inds[0][1]
-            self.chunk_begin_indices = inds[0]
-        
+    def contains(self, current_inds):
+        '''Whether this SeatGroup contains a seat index'''
+        if self.chunk_begin_indices[0] != current_inds[0]:
+            return False
 
-    def split():
-        # Split SeatGroups into 2 seatgroups. Split near center, where not specialized
+        lo_bound = self.chunk_begin_indices[1]
+        hi_bound = self.chunk_begin_indices[1] + self.chunk_size
+        if lo_bound <= current_inds[1] and hi_bound >= current_inds[1]:
+            return True
+
+        return False
+
+    def split(self):
+        '''Split SeatGroups into 2 seatgroups by emptying the center seat'''
         pass
 
-    def sorter():
-        # Implement sorter for list of SeatGroups
-        pass
+    def __str__(self):
+        return self.chunk_size
 
+    def __repr__(self):
+        return str(self.chunk_size)
 
