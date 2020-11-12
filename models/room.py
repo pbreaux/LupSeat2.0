@@ -1,4 +1,6 @@
-import io
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 def chr_to_int(char):
     '''Convert row char to row number
@@ -10,7 +12,7 @@ def chr_to_int(char):
     '''
     return ord(char.lower()) - ord('a') + 1
 
-def int_to_chr(row):
+def int_to_chr(num):
     '''Convert row number to row char
     Args:
         row (int): 0 to max_row-1
@@ -18,7 +20,7 @@ def int_to_chr(row):
     Returns:
         int: row char ('a', 'b')
     '''
-    return chr(ord('a') + row)
+    return chr(ord('a') + num)
 
 def seat_inds(seat):
     '''Get seat indices'''
@@ -159,7 +161,7 @@ class Room:
                 if line == "":
                     continue
 
-                # CHeck if line formatted correctly
+                # Check if line formatted correctly
                 if len(line.split(':')) != 2:
                     raise Exception("Line not formatted correctly: {}".format(line))
 
@@ -201,6 +203,7 @@ class Room:
 
         Args:
             filepath (str): filepath for output
+            seed (int): seed for randomizer
         """
         with open(filepath, 'w') as outfile:
             for row in range(self.max_row):
@@ -220,6 +223,50 @@ class Room:
             outfile.write("\nSeed:{}\n".format(seed))
 
         print("Finished saving to file: {}".format(filepath))
+
+    def save_gfile(self, filepath):
+        """Saves seats with student info to a file
+
+        Args:
+            filepath (str): filepath for output
+        """
+        data = np.zeros((self.max_row, self.max_col))
+
+        for row in range(self.max_row):
+            for col in range(self.max_col):
+                if self.seats[row][col] == None:
+                    data[row][col] = -1
+                    continue
+
+                if self.seats[row][col].sid == -1:
+                    data[row][col] = 0
+                    continue
+
+                data[row][col] = 1
+
+        fig, ax = plt.subplots()
+        im = ax.imshow(data)
+
+        col_ticks = list(range(1,self.max_col+1))
+        row_ticks = [int_to_chr(row) for row in range(self.max_row)]
+
+        ax.set_xticks(np.arange(len(col_ticks)))
+        ax.set_yticks(np.arange(len(row_ticks)))
+
+        ax.set_xticklabels(col_ticks)
+        ax.set_yticklabels(row_ticks)
+
+        # Loop over data dimensions and create text annotations.
+        for i in range(len(col_ticks)):
+            for j in range(len(row_ticks)):
+                label = row_ticks[j] + str(col_ticks[i])
+                text = ax.text(i, j, label,ha="center", va="center", color="w")
+
+        ax.set_title("Seating Chart")
+        fig.tight_layout()
+        plt.savefig(filepath)
+
+        print("Finished saving to image file: {}".format(filepath))
 
     def add_student(self, indices, sid):
         self.seats[indices[0]][indices[1]].sid = sid

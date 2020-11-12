@@ -22,4 +22,5 @@ rm = Room.create_room(args.seats)
 assign_seats(rm, stdts)
 
 rm.save_file(args.out, seed)
+rm.save_gfile(args.gout, seed)
 
