@@ -225,7 +225,7 @@ class Room:
         print("Finished saving to file: {}".format(filepath))
 
     def save_gfile(self, filepath):
-        """Saves seats with student info to a file
+        """Saves seats with student info to an image file
 
         Args:
             filepath (str): filepath for output
@@ -235,17 +235,19 @@ class Room:
         for row in range(self.max_row):
             for col in range(self.max_col):
                 if self.seats[row][col] == None:
-                    data[row][col] = -1
-                    continue
-
-                if self.seats[row][col].sid == -1:
+                    data[row][col] = -2
+                elif self.seats[row][col].broken:
+                    data[row][col] = -1 
+                elif self.seats[row][col].sid == -1:
                     data[row][col] = 0
-                    continue
-
-                data[row][col] = 1
+                else:
+                    data[row][col] = 1
 
         fig, ax = plt.subplots()
         im = ax.imshow(data)
+
+        # TODO Add discrete colors rather than heatmap (use cmap)
+        # TODO Add legend
 
         col_ticks = list(range(1,self.max_col+1))
         row_ticks = [int_to_chr(row) for row in range(self.max_row)]
