@@ -3,7 +3,16 @@ from models.room import *
 from models.assign import *
 from models.parser import *
 
+import random
+import time
+
 args = parse_args()
+
+if args.seed != None:
+    seed = args.seed
+else:
+    seed = int(time.time())
+random.seed(seed)
 
 stdts = Student.parse_stdt(args.student)
 if args.partner != None:
@@ -12,5 +21,5 @@ rm = Room.create_room(args.seats)
 
 assign_seats(rm, stdts)
 
-rm.save_file(args.out)
+rm.save_file(args.out, seed)
 

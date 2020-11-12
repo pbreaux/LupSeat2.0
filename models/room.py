@@ -193,7 +193,7 @@ class Room:
             raise Exception("Unknown col range format: {}".format(cur_col_range))
 
 
-    def save_file(self, filepath):
+    def save_file(self, filepath, seed):
         """Saves seats with student info to a file
 
         Args:
@@ -213,6 +213,8 @@ class Room:
                     sid = self.seats[row][col].sid
 
                     outfile.write("{}{}: {}\n".format(row_chr, col_chr, sid))
+
+            outfile.write("\nSeed:{}\n".format(seed))
 
         print("Finished saving to file: {}".format(filepath))
 

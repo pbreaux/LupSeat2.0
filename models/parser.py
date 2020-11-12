@@ -6,4 +6,5 @@ def parse_args():
     parser.add_argument("seats", help="Yaml file containing room seating info")
     parser.add_argument("--partner", help="CSV file student partner history")
     parser.add_argument("--out", help="Output file", default="out.txt")
+    parser.add_argument("--seed", help="Seed")
     return parser.parse_args()
