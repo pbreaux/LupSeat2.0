@@ -1,6 +1,4 @@
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
+from models.seat import *
 
 def chr_to_int(char):
     '''Convert row char to row number
@@ -41,14 +39,14 @@ def process_str(raw_str):
         raw_str = raw_str[:-1]
     return "".join(raw_str.lower().split())
 
-
 class Room:
     """Contains grid representation of room containing seat instances"""
     def __init__(self):
         self.max_row = 1
         self.max_col = 1
         self.seats = []
-        self.seat_groups = []
+        # Specifies where the row iis discontinuous (can be considered new chunk)
+        self.row_breaks = []
 
     def __str__(self):
         output = ''
@@ -114,6 +112,7 @@ class Room:
         """Adds seats to room (during instantiation)"""
         # Row major
         for row in range(self.max_row):
+            self.row_breaks.append([])
             self.seats.append([None] * self.max_col)
 
         seat_flag = False
@@ -139,13 +138,8 @@ class Room:
                     for cur_col in self._get_col_inds(row_range):
                         self.seats[cur_row-1][cur_col-1] = Seat()
 
-                    # Populate seat_groups
-                    beg_seat = self._get_col_inds(row_range).start
-                    end_seat = self._get_col_inds(row_range).stop
-                    inds = ((cur_row, beg_seat), (cur_row, end_seat))
-                    self.seat_groups.append(SeatGroups(inds))
-
-        self.seat_groups.sort(key=(lambda x : x.chunk_size), reverse=True)
+                    # Store row break
+                    self.row_breaks[cur_row-1].append(cur_col-1)
 
     def _add_seat_specifiers(self, f_raw):
         """Adds seat features to each seat (during instantiation)"""
@@ -197,79 +191,6 @@ class Room:
         else:
             raise Exception("Unknown col range format: {}".format(cur_col_range))
 
-
-    def save_file(self, filepath, seed):
-        """Saves seats with student info to a file
-
-        Args:
-            filepath (str): filepath for output
-            seed (int): seed for randomizer
-        """
-        with open(filepath, 'w') as outfile:
-            for row in range(self.max_row):
-                for col in range(self.max_col):
-                    if self.seats[row][col] == None:
-                        continue
-
-                    if self.seats[row][col].sid == -1:
-                        continue
-
-                    row_chr = int_to_chr(row)
-                    col_chr = str(col + 1)
-                    sid = self.seats[row][col].sid
-
-                    outfile.write("{}{}: {}\n".format(row_chr, col_chr, sid))
-
-            outfile.write("\nSeed:{}\n".format(seed))
-
-        print("Finished saving to file: {}".format(filepath))
-
-    def save_gfile(self, filepath):
-        """Saves seats with student info to an image file
-
-        Args:
-            filepath (str): filepath for output
-        """
-        data = np.zeros((self.max_row, self.max_col))
-
-        for row in range(self.max_row):
-            for col in range(self.max_col):
-                if self.seats[row][col] == None:
-                    data[row][col] = -2
-                elif self.seats[row][col].broken:
-                    data[row][col] = -1 
-                elif self.seats[row][col].sid == -1:
-                    data[row][col] = 0
-                else:
-                    data[row][col] = 1
-
-        fig, ax = plt.subplots()
-        im = ax.imshow(data)
-
-        # TODO Add discrete colors rather than heatmap (use cmap)
-        # TODO Add legend
-
-        col_ticks = list(range(1,self.max_col+1))
-        row_ticks = [int_to_chr(row) for row in range(self.max_row)]
-
-        ax.set_xticks(np.arange(len(col_ticks)))
-        ax.set_yticks(np.arange(len(row_ticks)))
-
-        ax.set_xticklabels(col_ticks)
-        ax.set_yticklabels(row_ticks)
-
-        # Loop over data dimensions and create text annotations.
-        for i in range(len(col_ticks)):
-            for j in range(len(row_ticks)):
-                label = row_ticks[j] + str(col_ticks[i])
-                text = ax.text(i, j, label,ha="center", va="center", color="w")
-
-        ax.set_title("Seating Chart")
-        fig.tight_layout()
-        plt.savefig(filepath)
-
-        print("Finished saving to image file: {}".format(filepath))
-
     def add_student(self, indices, sid):
         self.seats[indices[0]][indices[1]].sid = sid
 
@@ -296,6 +217,10 @@ class Room:
                 if self.seats[row][col].broken:
                     continue
 
+                # Ignore disabled seats
+                if not self.seats[row][col].enable:
+                    continue
+
                 # Ignore if seat is taken
                 if self.seats[row][col].sid != -1:
                     continue
@@ -318,43 +243,54 @@ class Room:
 
         return match_seats
 
-class Seat:
-    """Seat contains features of the seat"""
-    def __init__(self):
-        self.left_handed = False
-        self.special_needs = False
-        self.broken = False
+    def split_to_chunks(self):
+        '''Splits seats into SeatGroup chunks if they are continuous and not broken.
+        Returns:
+            List[SeatGroups]: List of SeatGropus representing preliminary chunk.
+        '''
+        # Populate chunks assuming infinite max_chunk_size
+        chunks = []
 
-        # Describes sid of person sitting there
-        self.sid = -1
+        is_chunk = False
+        chunk_begin = None
 
-class SeatGroups:
-    """SeatGroups define a contiguous seats in a row. 
-    This helps determine how to place empty seats in order to minimize student chunks
-    """
-    def __init__(self, inds):
-        self.chunk_size = inds[1][1] - inds[0][1]
-        self.chunk_begin_indices = inds[0]
-        
-    def contains(self, current_inds):
-        '''Whether this SeatGroup contains a seat index'''
-        if self.chunk_begin_indices[0] != current_inds[0]:
-            return False
+        for row in range(self.max_row):
+            for col in range(self.max_col):
+                # Start new chunk
+                if not is_chunk and self.seats[row][col] != None and not self.seats[row][col].broken:
+                    is_chunk = True
+                    chunk_begin = (row, col)
+                    continue
 
-        lo_bound = self.chunk_begin_indices[1]
-        hi_bound = self.chunk_begin_indices[1] + self.chunk_size
-        if lo_bound <= current_inds[1] and hi_bound >= current_inds[1]:
-            return True
+                # End current chunk
+                if is_chunk and (self.seats[row][col] == None or self.seats[row][col].broken) and col in row_breaks[row]:
+                    is_chunk = False
+                    chunk_end = (row, col-1)
+                    chunks.append(SeatGroups(chunk_begin, chunk_end))
 
-        return False
+            if is_chunk:
+                is_chunk = False
+                chunk_end = (row, col-1)
+                chunks.append(SeatGroups(chunk_begin, chunk_end))
 
-    def split(self):
-        '''Split SeatGroups into 2 seatgroups by emptying the center seat'''
-        pass
+        return chunks
 
-    def __str__(self):
-        return self.chunk_size
+    def get_max_chunk_size(self, chunks, num_students):
+        '''Find the minumum "max chunk size" needed to fit everybody
+        Args:
+            chunks (List[SeatGroups]): list of prelimiinary chunks before applying empty seats
+            num_students (int): Number of students who need seats
 
-    def __repr__(self):
-        return str(self.chunk_size)
+        Returns:
+            int: Minimum "max size of chunk" necessary to create chunks to fit everybody in the room
+        '''
+        for chunk_size in range(1, num_students):
+            num_seats_filled = 0
+            for chunk in chunks:
+                num_seats_filled += chunk.num_seats(chunk_size)
+                if num_seats_filled >= num_students:
+                    return chunk_size
+
+        # Students don't fit in seats
+        raise Exception("Students don't fit in seat")
 

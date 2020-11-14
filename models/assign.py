@@ -8,6 +8,20 @@ def choose_seat(seat_inds):
     seat_inds.remove(ele)
     return ele
 
+def assign_empty_seats(rm, stdts):
+    '''Disables empty seats by distributing it evenly amongst room.
+    Args:
+        stdts (dict{Student}): dictionary of students, identified by SID
+    '''
+    chunks = rm.split_to_chunks()
+    max_chunk_size = rm.get_max_chunk_size(chunks, len(stdts))
+
+    for chunk in chunks:
+        empty_inds = chunk.get_empty_seats_inds(max_chunk_size)
+
+        for empty_ind in empty_inds:
+            rm.seats[empty_ind[0]][empty_ind[1]].enable = False
+
 def assign_seats(rm, stdts):
     '''Assign seats based on specificity, from most specific to least. 
     Room class controls which seats are available for students.
