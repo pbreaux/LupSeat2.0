@@ -37,6 +37,9 @@ class Student:
         Returns:
             dict{Student}: dictionary of students, identified by SID (modified with partners list)
         """
+        # Do nothing if no filepath specified
+        if filepath == None:
+            return stdts
 
         with open(filepath) as csvfile:
             csv_reader = csv.reader(csvfile)
