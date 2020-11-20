@@ -21,7 +21,7 @@ stdts = Student.parse_stdt_partners(args.partner, stdts)
 rm = Room.create_room(args.seats)
 
 # Assign seats
-#assign_empty_seats(rm, stdts)
+assign_empty_seats(Algorithm.CHUNK_INCREASE, rm, stdts)
 assign_seats(rm, stdts)
 
 # Save output

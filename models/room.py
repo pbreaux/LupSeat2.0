@@ -194,6 +194,9 @@ class Room:
     def add_student(self, indices, sid):
         self.seats[indices[0]][indices[1]].sid = sid
 
+    def set_enable(self, indices, val):
+        self.seats[indices[0]][indices[1]].enable = val
+
     def get_spec_seats(self, left_hand=False, special_needs=False):
         """Gets specified seats or seats with more specificity
         e.g. If getting left_handed seats, will look for both special_needs and non_sp_needs seats
@@ -260,12 +263,15 @@ class Room:
                 if not is_chunk and self.seats[row][col] != None and not self.seats[row][col].broken:
                     is_chunk = True
                     chunk_begin = (row, col)
-                    continue
-
                 # End current chunk
-                if is_chunk and (self.seats[row][col] == None or self.seats[row][col].broken) and col in row_breaks[row]:
+                elif is_chunk and (self.seats[row][col] == None or self.seats[row][col].broken):
                     is_chunk = False
                     chunk_end = (row, col-1)
+                    chunks.append(SeatGroups(chunk_begin, chunk_end))
+                # End current chunk due to row break
+                elif is_chunk and col in self.row_breaks[row]:
+                    is_chunk = False
+                    chunk_end = (row, col)
                     chunks.append(SeatGroups(chunk_begin, chunk_end))
 
             if is_chunk:
@@ -276,7 +282,7 @@ class Room:
         return chunks
 
     def get_max_chunk_size(self, chunks, num_students):
-        '''Find the minumum "max chunk size" needed to fit everybody
+        '''Find the minumum "max chunk size" needed to fit everybody. Used for ChunkIncrease
         Args:
             chunks (List[SeatGroups]): list of prelimiinary chunks before applying empty seats
             num_students (int): Number of students who need seats
@@ -288,7 +294,7 @@ class Room:
             num_seats_filled = 0
             for chunk in chunks:
                 num_seats_filled += chunk.num_seats(chunk_size)
-                if num_seats_filled >= num_students:
+                if num_seats_filled > num_students:
                     return chunk_size
 
         # Students don't fit in seats

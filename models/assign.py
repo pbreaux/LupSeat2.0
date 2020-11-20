@@ -1,6 +1,36 @@
 import random
 from models.student import *
 from models.room import *
+from enum import Enum
+
+class Algorithm(Enum):
+    CHUNK_INCREASE = 1
+    CONSEC_DIVIDE = 2
+
+class ChunkIncrease:
+    @staticmethod
+    def assign_empty_seats(rm, stdts):
+        '''Disables empty seats by distributing it evenly amongst room.
+        Args:
+            stdts (dict{Student}): dictionary of students, identified by SID
+        '''
+        chunks = rm.split_to_chunks()
+        max_chunk_size = rm.get_max_chunk_size(chunks, len(stdts))
+
+        for chunk in chunks:
+            empty_inds = chunk.get_empty_seats_inds(max_chunk_size)
+
+            for empty_ind in empty_inds:
+                rm.set_enable(empty_ind, False)
+
+class ConsecDivide:
+    @staticmethod
+    def assign_empty_seats(rm, stdts):
+        # Split until all empty seats accounted for
+
+        # Finalize empty seats
+        for chunk in rm.row_breaks:
+            chunk.apply_empty_seats(rm)
 
 def choose_seat(seat_inds):
     '''Randomly choose seat from list and remove it.'''
@@ -8,19 +38,16 @@ def choose_seat(seat_inds):
     seat_inds.remove(ele)
     return ele
 
-def assign_empty_seats(rm, stdts):
-    '''Disables empty seats by distributing it evenly amongst room.
+def assign_empty_seats(algorithm, rm, stdts):
+    '''Runs corresponding algorithm
     Args:
+        rm (Room): room object
         stdts (dict{Student}): dictionary of students, identified by SID
     '''
-    chunks = rm.split_to_chunks()
-    max_chunk_size = rm.get_max_chunk_size(chunks, len(stdts))
-
-    for chunk in chunks:
-        empty_inds = chunk.get_empty_seats_inds(max_chunk_size)
-
-        for empty_ind in empty_inds:
-            rm.seats[empty_ind[0]][empty_ind[1]].enable = False
+    if algorithm == Algorithm.CHUNK_INCREASE:
+        ChunkIncrease.assign_empty_seats(rm, stdts)
+    elif algorithm == Algorithm.CONSEC_DIVIDE:
+        ConsecDivide.assign_empty_seats(rm, stdts)
 
 def assign_seats(rm, stdts):
     '''Assign seats based on specificity, from most specific to least. 
