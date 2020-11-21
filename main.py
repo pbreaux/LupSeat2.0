@@ -25,6 +25,6 @@ assign_empty_seats(Algorithm.CHUNK_INCREASE, rm, stdts)
 assign_seats(rm, stdts)
 
 # Save output
-save_file(rm, args.out, seed)
+save_file(rm, args.out, stdts, args.fmt, seed)
 save_gfile(rm, args.gout)
 

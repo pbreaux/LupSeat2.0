@@ -3,14 +3,19 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from models.room import *
+from models.parser import *
 
-def save_file(rm, filepath, seed):
+def save_file(rm, filepath, stdts, str_form, seed):
     """Saves seats with student info to a file
 
     Args:
+        stdst (dict{Student}): map of students, identified by sid
         filepath (str): filepath for output
+        str_form (str): output format for each student, specified by user
         seed (int): seed for randomizer
     """
+    fmt = SliceFormatter()
+
     with open(filepath, 'w') as outfile:
         for row in range(rm.max_row):
             for col in range(rm.max_col):
@@ -22,9 +27,14 @@ def save_file(rm, filepath, seed):
 
                 row_chr = int_to_chr(row)
                 col_chr = str(col + 1)
-                sid = rm.seats[row][col].sid
 
-                outfile.write("{}{}: {}\n".format(row_chr, col_chr, sid))
+                sid = rm.seats[row][col].sid
+                fname = stdts[sid].first
+                lname = stdts[sid].last
+
+                stdt_str = fmt.format(str_form, sid=str(sid), fname=fname, lname=lname)
+
+                outfile.write("{}{}: {}\n".format(row_chr, col_chr, stdt_str))
 
         outfile.write("\nSeed:{}\n".format(seed))
 
