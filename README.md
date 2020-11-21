@@ -28,6 +28,8 @@ Variable names in format string must be encased by brackets, and can be sliced u
 
 ### Examples
 `{fname} {lname} has sid {sid}`
+
 `{sid|-5,-1}`
+
 `{fname|0}.{lname|0}.`
 
