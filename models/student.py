@@ -15,7 +15,7 @@ class Student:
         with open(filepath) as csvfile:
             csv_reader = csv.reader(csvfile)
             for row in csv_reader:
-                if len(row) < 6:
+                if len(row) < 5:
                     print("Error parsing student: {}. Skipping.".format(row))
                     continue
                 try:
@@ -52,21 +52,20 @@ class Student:
     def __init__(self, stdt):
         """ Initialize student by parsing line in csv. Does type checking"""
         self.first = stdt[0]
-        self.middle = stdt[1]
-        self.last = stdt[2]
+        self.last = stdt[1]
 
-        if not str.isdigit(stdt[3]):
-            raise Exception("SID must be an integer: {}".format(stdt[3]))
-        elif int(stdt[3]) < 0:
-            raise Exception("SID must be a postiive integer: {}".format(stdt[3]))
+        if not str.isdigit(stdt[2]):
+            raise Exception("SID must be an integer: {}".format(stdt[2]))
+        elif int(stdt[2]) < 0:
+            raise Exception("SID must be a postiive integer: {}".format(stdt[2]))
         else:
-            self.sid = int(stdt[3])
+            self.sid = int(stdt[2])
 
         # Assume right hand
-        self.left_hand = True if stdt[4] == "left" or "left" in stdt[4] else False
+        self.left_hand = True if stdt[3] == "left" or "left" in stdt[3] else False
 
         # Assume no special needs
-        self.special_needs = True if stdt[5] == "special" or "special" in stdt[5] else False
+        self.special_needs = True if stdt[4] == "special" or "special" in stdt[4] else False
 
         self.past_partners = []
 
