@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 from matplotlib import colors
 from models.room import *
 from models.parser import *
@@ -67,6 +68,12 @@ def save_gfile(rm, filepath):
 
     col_ticks = list(range(1,rm.max_col+1))
     row_ticks = [int_to_chr(row) for row in range(rm.max_row)]
+    
+    # Draw row separators
+    for row, cols in enumerate(rm.row_breaks):
+        for col in cols:
+            l = mlines.Line2D([col+0.5, col+0.5], [row+0.5, row-0.5], color='black', linewidth=2)
+            ax.add_line(l)
 
     ax.set_xticks(np.arange(len(col_ticks)))
     ax.set_yticks(np.arange(len(row_ticks)))

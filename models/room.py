@@ -45,7 +45,7 @@ class Room:
         self.max_row = 1
         self.max_col = 1
         self.seats = []
-        # Specifies where the row iis discontinuous (can be considered new chunk)
+        # Specifies where the row is discontinuous (can be considered new chunk)
         self.row_breaks = []
 
     def __str__(self):
