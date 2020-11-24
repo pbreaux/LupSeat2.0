@@ -83,5 +83,5 @@ class ChunkIncreaseMethods(unittest.TestCase):
             SeatGroups(('c', 4), ('c', 10)),
         ]
         with self.assertRaises(Exception):
-            chunk_size = ChunkIncrease.get_max_chunk_size(sgl, 22)
+            ChunkIncrease.get_max_chunk_size(sgl, 22)
 
