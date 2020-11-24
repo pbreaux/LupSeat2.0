@@ -62,7 +62,7 @@ def save_gfile(rm, filepath):
                 data[row][col] = 3
 
     fig, ax = plt.subplots()
-    im = ax.imshow(data, cmap=cmap)
+    im = ax.imshow(data, cmap=cmap, vmin=0, vmax=3)
     cbar = plt.colorbar(im, ticks=[0, 1, 2, 3], orientation='horizontal')
     cbar.ax.set_xticklabels(['no seat', 'broken', 'empty', 'taken'])
 
