@@ -33,3 +33,6 @@ Variable names in format string must be encased by brackets, and can be sliced u
 
 `{fname|0}.{lname|0}.`
 
+
+## Unit Tests
+Run unit tests with `python3 -m unittest tests/*_test.py`
