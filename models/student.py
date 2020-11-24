@@ -76,7 +76,7 @@ class Student:
         return str(self)
 
     @staticmethod
-    def get_specified_students(stdts, left_hand=False, special_needs=False):
+    def get_spec_students(stdts, left_hand=False, special_needs=False):
         """Gets the specified students
         Args:
             stdts (dict{Student}): dictionary of students, identified by SID

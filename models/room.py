@@ -281,22 +281,3 @@ class Room:
 
         return chunks
 
-    def get_max_chunk_size(self, chunks, num_students):
-        '''Find the minumum "max chunk size" needed to fit everybody. Used for ChunkIncrease
-        Args:
-            chunks (List[SeatGroups]): list of prelimiinary chunks before applying empty seats
-            num_students (int): Number of students who need seats
-
-        Returns:
-            int: Minimum "max size of chunk" necessary to create chunks to fit everybody in the room
-        '''
-        for chunk_size in range(1, num_students):
-            num_seats_filled = 0
-            for chunk in chunks:
-                num_seats_filled += chunk.num_seats(chunk_size)
-                if num_seats_filled > num_students:
-                    return chunk_size
-
-        # Students don't fit in seats
-        raise Exception("Students don't fit in seat")
-
