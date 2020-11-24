@@ -52,7 +52,7 @@ class Algorithm:
 
 class ChunkIncrease(Algorithm):
     @staticmethod
-    def empty_seats_2pass(seat_group, max_chunk_size, empty_inds):
+    def distribute_empty(seat_group, max_chunk_size, chk_size_l):
         '''Second pass to distribute empty seat inds within seat group.
         Args:
             seat_group (SeatGroup): Single SeatGroup to distribute students
@@ -63,6 +63,28 @@ class ChunkIncrease(Algorithm):
             (List[Tuple(int, int)]): List of empty seat indices
         '''
         size = seat_group.size()
+        if size <= max_chunk_size:
+            return []
+
+        # Check whether seats within chunks can be redistributed
+        # TODO: This can be optimized
+        chk_size_l.sort()
+        while chk_size_l[0] <= chk_size_l[-1] - 2:
+            chk_size_l[0] += 1
+            chk_size_l[-1] -= 1
+            chk_size_l.sort()
+
+        # Get new empty inds
+        empty_inds = []
+        seat = 0
+        for chk_size in chk_size_l:
+            seat += chk_size
+            cur_seat = (seat_group.chunk_begin[0], seat_group.chunk_begin[1] + seat)
+            empty_inds.append(cur_seat)
+            seat += 1
+
+        # Remove last seat from empty inds
+        return empty_inds[:-1]
 
     @staticmethod
     def get_empty_seats_inds(seat_group, max_chunk_size):
@@ -72,37 +94,41 @@ class ChunkIncrease(Algorithm):
             max_chunk_size (int): Max size of students sitting together
 
         Returns:
-            (List[Tuple(int, int)]): List of empty seat indices
+            (List[Tuple(int, int)]): List of empty seat indices (if 2 pass not needed)
+            (List[int]): List of chunk sizes separated by empty seat (used for 2 pass)
         '''
         size = seat_group.size()
         if size <= max_chunk_size:
             return []
 
         empty_inds = []
-
-        # Assign seats at edges
-        edges_assgn = size > 2
+        chunk_list = []
 
         # Continue assignment linearly
         current_chunk_size = 0
         for seat in range(size):
+            cur_seat = (seat_group.chunk_begin[0], seat_group.chunk_begin[1] + seat)
+
             # Special case: If we are at second to last seat
             # (Due to last seat already being taken)
-            if seat == (size - 2) and edges_assgn:
-                # Check if adding this seat would exceed max size
-                if current_chunk_size + 2 > max_chunk_size:
-                    empty_inds.append((seat_group.chunk_begin[0], seat_group.chunk_begin[1] + seat))
-                    current_chunk_size = 0
-                    break
+            # If adding (this seat + last seat) to current chunk exceeds max size
+            edges_assgn = size > 2
+            second_last = seat == (size - 2) and edges_assgn and current_chunk_size + 2 > max_chunk_size
 
-            if current_chunk_size == max_chunk_size:
-                # Break off chunk
-                empty_inds.append((seat_group.chunk_begin[0], seat_group.chunk_begin[1] + seat))
+            if current_chunk_size == max_chunk_size or second_last:
+                # Break off chunk (got too big) or second to last must be empty
+                empty_inds.append(cur_seat)
+                chunk_list.append(current_chunk_size)
                 current_chunk_size = 0
             else:
                 current_chunk_size += 1
 
-        return empty_inds
+        # Add last seat
+        if current_chunk_size != 0:
+            chunk_list.append(current_chunk_size)
+            current_chunk_size = 0
+
+        return empty_inds, chunk_list
 
     @staticmethod
     def get_possible_seats(seat_group, max_chunk_size):
@@ -164,7 +190,8 @@ class ChunkIncrease(Algorithm):
         max_chunk_size = ChunkIncrease.get_max_chunk_size(chunks, len(stdts))
 
         for chunk in chunks:
-            empty_inds = ChunkIncrease.get_empty_seats_inds(chunk, max_chunk_size)
+            _, chk_size_l = ChunkIncrease.get_empty_seats_inds(chunk, max_chunk_size)
+            empty_inds = ChunkIncrease.distribute_empty(chunk, max_chunk_size, chk_size_l)
 
             for empty_ind in empty_inds:
                 rm.set_enable(empty_ind, False)
