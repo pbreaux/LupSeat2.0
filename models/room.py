@@ -39,6 +39,22 @@ def process_str(raw_str):
         raw_str = raw_str[:-1]
     return "".join(raw_str.lower().split())
 
+def get_col_inds(col_range):
+    """Gets column indices in iterator form"""
+    if '-' in col_range:
+        beg_seat = col_range.split('-')[0]
+        end_seat = col_range.split('-')[1]
+        if beg_seat[0] != end_seat[0]:
+            raise Exception("Non matching row char {} and {}".format(beg_seat[0], end_seat[0]))
+
+        beg = int(beg_seat[1:])
+        end = int(end_seat[1:])
+        return range(beg, end+1)
+    elif str.isdigit(col_range[1:]):
+        return range(int(col_range[1:]), int(col_range[1:])+1)
+    else:
+        raise Exception("Unknown col range format: {}".format(cur_col_range))
+
 class Room:
     """Contains grid representation of room containing seat instances"""
     def __init__(self):
@@ -135,7 +151,7 @@ class Room:
 
                     # Add seat
                     cur_row = chr_to_int(row_range[0])
-                    for cur_col in self._get_col_inds(row_range):
+                    for cur_col in get_col_inds(row_range):
                         self.seats[cur_row-1][cur_col-1] = Seat()
 
                     # Store row break
@@ -174,22 +190,6 @@ class Room:
                         self.seats[cur_row-1][cur_col-1].left_handed = True
                     if flag == 's':
                         self.seats[cur_row-1][cur_col-1].special_needs = True
-
-    def _get_col_inds(self, col_range):
-        """Gets column indices in iterator form"""
-        if '-' in col_range:
-            beg_seat = col_range.split('-')[0]
-            end_seat = col_range.split('-')[1]
-            if beg_seat[0] != end_seat[0]:
-                raise Exception("Non matching row char {} and {}".format(beg_seat[0], end_seat[0]))
-
-            beg = int(beg_seat[1:])
-            end = int(end_seat[1:])
-            return range(beg, end+1)
-        elif str.isdigit(col_range[1:]):
-            return range(int(col_range[1:]), int(col_range[1:])+1)
-        else:
-            raise Exception("Unknown col range format: {}".format(cur_col_range))
 
     def add_student(self, indices, sid):
         self.seats[indices[0]][indices[1]].sid = sid
@@ -268,8 +268,9 @@ class Room:
                     is_chunk = False
                     chunk_end = (row, col-1)
                     chunks.append(SeatGroups(chunk_begin, chunk_end))
+
                 # End current chunk due to row break
-                elif is_chunk and col in self.row_breaks[row]:
+                if is_chunk and col in self.row_breaks[row]:
                     is_chunk = False
                     chunk_end = (row, col)
                     chunks.append(SeatGroups(chunk_begin, chunk_end))
