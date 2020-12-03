@@ -4,3 +4,5 @@ venv/
 out.txt
 out.jpg
 tests/test.csv
+scripts/testseat.txt
+scripts/teststudents.csv
