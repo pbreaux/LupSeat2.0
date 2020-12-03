@@ -29,11 +29,23 @@ class SeatGroups:
     def size(self):
         return self.chunk_end[1] - self.chunk_begin[1] + 1
 
+    def max_chunk_size(self):
+        max_chunk = 0
+        cur_chunk = 0
+        for col in range(self.chunk_begin[1], self.chunk_end[1] + 1):
+            if col in self.empty:
+                max_chunk = max(max_chunk, cur_chunk)
+                cur_chunk = 0
+            else:
+                cur_chunk += 1
+
+        return max(max_chunk, cur_chunk)
+
     def avail_size(self):
         return self.size() - len(self.empty)
 
     def __str__(self):
-        return str(self.avail_size())
+        return str(self.max_chunk_size())
 
     def __repr__(self):
         return str(self)

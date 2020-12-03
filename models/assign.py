@@ -4,6 +4,14 @@ from models.student import *
 from models.room import *
 
 class Algorithm:
+    @classmethod
+    def choose_algorithm(alg):
+        alg = alg.lower().replace(' ','')
+        if alg == "chunkincrease":
+            return ChunkIncrease()
+        elif alg == "consecdivide":
+            return ConsecDivide()
+
     @staticmethod
     def choose_seat(seat_inds):
         '''Randomly choose seat from list and remove it.'''
@@ -212,6 +220,33 @@ class ConsecDivide(Algorithm):
         return total
 
     @staticmethod
+    def get_subchunk_empty(new_subchunks, subchunk_size, remainder, offset):
+        '''Gets empty seat indiices based on params.
+        Args:
+            new_subchunks (int): Number of subchunks to split seats into.
+            subchunk_size (int): Number of seats per subchunk.
+            remainder (int): Left over seats to be distributed into subchunks.
+            offset (int): Number of col offset where the seat begins.
+
+        Returns:
+            (List[int]): List of empty seat indices by column.
+        '''
+        counter = 0
+        empty_list = []
+        for subchunk in range(new_subchunks):
+            # Compute size of current chunk
+            cur_subchunk_size = subchunk_size
+            if remainder > 0:
+                cur_subchunk_size += 1
+                remainder -= 1
+
+            empty_list.append(cur_subchunk_size + counter + offset)
+            counter += cur_subchunk_size + 1
+
+        # Remove last element
+        return empty_list[:-1]
+
+    @staticmethod
     def assign_empty_seats(rm, stdts):
         '''Disables empty seats by continuous splitting
         Args:
@@ -229,35 +264,28 @@ class ConsecDivide(Algorithm):
         elif num_stdts > num_seats:
             raise Exception("Not enough seats for all students")
 
-        chunks.sort(key=SeatGroups.avail_size, reverse=True)
+        chunks.sort(key=SeatGroups.max_chunk_size, reverse=True)
 
         for i in range(num_empty):
-            if chunks[0].avail_size() <= 1:
+            if chunks[0].max_chunk_size() <= 1:
                 break
 
+            # Compute how many times this chunk needs to be split
             num_subchunks = len(chunks[0].empty) + 1
             new_subchunks = num_subchunks + 1
+
+            # Compute size of new subchunks
             occupied_seats = chunks[0].size() - (len(chunks[0].empty) + 1)
             subchunk_size = math.floor(occupied_seats / new_subchunks)
             remainder = occupied_seats % new_subchunks
 
-            chunks[0].empty = []
+            # Beginning of col
+            offset = chunks[0].chunk_begin[1]
 
-            counter = 0
-            for subchunk in range(new_subchunks - 1):
-                # Compute size of current chunk
-                cur_subchunk_size = subchunk_size
-                if remainder > 0:
-                    cur_subchunk_size += 1
-                    remainder -= 1
+            # Get empty seat indices to split into subchunks
+            chunks[0].empty = ConsecDivide.get_subchunk_empty(new_subchunks, subchunk_size, remainder, offset)
 
-                chunks[0].empty.append(cur_subchunk_size + counter)
-                counter += cur_subchunk_size + 1
-
-            # Remove last seat
-            chunks[0].empty = chunks[0].empty[:-1]
-
-            chunks.sort(key=SeatGroups.avail_size, reverse=True)
+            chunks.sort(key=SeatGroups.max_chunk_size, reverse=True)
 
         # Finalize empty seats
         ConsecDivide.apply_empty_seats(rm, chunks)
