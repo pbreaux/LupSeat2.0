@@ -1,5 +1,6 @@
 import argparse
 import string
+import time
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Assign seats to students automatically.")
@@ -9,7 +10,9 @@ def parse_args():
     parser.add_argument("--out", help="Output file", default="out.txt")
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
     parser.add_argument("--gout", help="Output image file", default="out.jpg")
-    parser.add_argument("--seed", help="Seed")
+    parser.add_argument("--seed", help="Seed", default=int(time.time()))
+    parser.add_argument("--eval", help="Evaluate algorithm")
+    parser.add_argument("--algorithm", help="Choose algorithm to use")
     return parser.parse_args()
 
 class SliceFormatter(string.Formatter):
