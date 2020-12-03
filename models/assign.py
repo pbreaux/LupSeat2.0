@@ -4,13 +4,15 @@ from models.student import *
 from models.room import *
 
 class Algorithm:
-    @classmethod
+    @staticmethod
     def choose_algorithm(alg):
         alg = alg.lower().replace(' ','')
         if alg == "chunkincrease":
             return ChunkIncrease()
         elif alg == "consecdivide":
             return ConsecDivide()
+        else:
+            raise Exception("Algorithm {} Unknown".format(alg))
 
     @staticmethod
     def choose_seat(seat_inds):
