@@ -23,12 +23,18 @@ class SeatGroups:
         if self.chunk_begin[0] != self.chunk_end[0]:
             raise Exception("Rows don't match, can't be a chunk.")
 
+        # Used for ConsecDivide (only stores cols)
+        self.empty = []
+
     def size(self):
         return self.chunk_end[1] - self.chunk_begin[1] + 1
 
+    def avail_size(self):
+        return self.size() - len(self.empty)
+
     def __str__(self):
-        return self.chunk_size
+        return str(self.avail_size())
 
     def __repr__(self):
-        return str(self.chunk_size)
+        return str(self)
 

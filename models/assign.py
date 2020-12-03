@@ -1,7 +1,7 @@
 import random
+import math
 from models.student import *
 from models.room import *
-from enum import Enum
 
 class Algorithm:
     @staticmethod
@@ -52,7 +52,7 @@ class Algorithm:
 
 class ChunkIncrease(Algorithm):
     @staticmethod
-    def distribute_empty(seat_group, max_chunk_size, chk_size_l):
+    def distribute_empty_2pass(seat_group, max_chunk_size, chk_size_l):
         '''Second pass to distribute empty seat inds within seat group.
         Args:
             seat_group (SeatGroup): Single SeatGroup to distribute students
@@ -67,7 +67,6 @@ class ChunkIncrease(Algorithm):
             return []
 
         # Check whether seats within chunks can be redistributed
-        # TODO: This can be optimized
         chk_size_l.sort()
         while chk_size_l[0] <= chk_size_l[-1] - 2:
             chk_size_l[0] += 1
@@ -87,7 +86,7 @@ class ChunkIncrease(Algorithm):
         return empty_inds[:-1]
 
     @staticmethod
-    def get_empty_seats_inds(seat_group, max_chunk_size):
+    def distribute_empty(seat_group, max_chunk_size):
         '''Gets list of indices where empty seats should go. Prioritizes edge seats.
         Args:
             seat_group (SeatGroup): Single SeatGroup to distribute students
@@ -98,8 +97,8 @@ class ChunkIncrease(Algorithm):
             (List[int]): List of chunk sizes separated by empty seat (used for 2 pass)
         '''
         size = seat_group.size()
-        if size <= max_chunk_size:
-            return []
+        if max_chunk_size >= size:
+            return [], [size]
 
         empty_inds = []
         chunk_list = []
@@ -141,7 +140,6 @@ class ChunkIncrease(Algorithm):
             (int): Number of students who can be seated within this chunk
         '''
         size = seat_group.size()
-
         if max_chunk_size >= size:
             return size
 
@@ -173,52 +171,106 @@ class ChunkIncrease(Algorithm):
             num_seats_filled = 0
             for chunk in chunks:
                 num_seats_filled += ChunkIncrease.get_possible_seats(chunk, chunk_size)
+
+                # All students filled
                 if num_seats_filled >= num_students:
                     return chunk_size
 
         # Students don't fit in seats
         raise Exception("Students don't fit in seat")
 
-
     @staticmethod
     def assign_empty_seats(rm, stdts):
         '''Disables empty seats by distributing it evenly amongst room.
         Args:
+            rm (Room): Room instance
             stdts (dict{Student}): dictionary of students, identified by SID
         '''
         chunks = rm.split_to_chunks()
         max_chunk_size = ChunkIncrease.get_max_chunk_size(chunks, len(stdts))
 
         for chunk in chunks:
-            _, chk_size_l = ChunkIncrease.get_empty_seats_inds(chunk, max_chunk_size)
-            empty_inds = ChunkIncrease.distribute_empty(chunk, max_chunk_size, chk_size_l)
+            _, chk_size_l = ChunkIncrease.distribute_empty(chunk, max_chunk_size)
+            empty_inds = ChunkIncrease.distribute_empty_2pass(chunk, max_chunk_size, chk_size_l)
 
             for empty_ind in empty_inds:
                 rm.set_enable(empty_ind, False)
 
 class ConsecDivide(Algorithm):
     @staticmethod
-    def assign_empty_seats(rm, stdts):
+    def total_chunk_size(chunks):
+        '''Gets total num of seats in all SeatGroups
+        Args:
+            chunks (List[SeatGroup]): List of SeatGroups in room
 
-        # Used for ConsecDivide
-        # Temporary empty col numbers (for each SeatGroup)
-        # empty_col = []
-
-        # Split until all empty seats accounted for
-
-        # Finalize empty seats
-        for chunk in rm.row_breaks:
-            chunk.apply_empty_seats(rm)
+        Returns:
+            int: Number of available seats
+        '''
+        total = 0
+        for chunk in chunks:
+            total += chunk.size()
+        return total
 
     @staticmethod
-    def apply_empty_seats(seat_group, rm, empty_col):
-        '''Finished splitting chunk, disable empty seats. Used for ChunkIncrease
+    def assign_empty_seats(rm, stdts):
+        '''Disables empty seats by continuous splitting
+        Args:
+            rm (Room): Room instance
+            stdts (dict{Student}): dictionary of students, identified by SID
+        '''
+        # Split until all empty seats accounted for
+        chunks = rm.split_to_chunks()
+        num_stdts = len(stdts)
+        num_seats = ConsecDivide.total_chunk_size(chunks)
+        num_empty = num_seats - num_stdts
+
+        if num_stdts == num_seats:
+            return
+        elif num_stdts > num_seats:
+            raise Exception("Not enough seats for all students")
+
+        chunks.sort(key=SeatGroups.avail_size, reverse=True)
+
+        for i in range(num_empty):
+            if chunks[0].avail_size() <= 1:
+                break
+
+            num_subchunks = len(chunks[0].empty) + 1
+            new_subchunks = num_subchunks + 1
+            occupied_seats = chunks[0].size() - (len(chunks[0].empty) + 1)
+            subchunk_size = math.floor(occupied_seats / new_subchunks)
+            remainder = occupied_seats % new_subchunks
+
+            chunks[0].empty = []
+
+            counter = 0
+            for subchunk in range(new_subchunks - 1):
+                # Compute size of current chunk
+                cur_subchunk_size = subchunk_size
+                if remainder > 0:
+                    cur_subchunk_size += 1
+                    remainder -= 1
+
+                chunks[0].empty.append(cur_subchunk_size + counter)
+                counter += cur_subchunk_size + 1
+
+            # Remove last seat
+            chunks[0].empty = chunks[0].empty[:-1]
+
+            chunks.sort(key=SeatGroups.avail_size, reverse=True)
+
+        # Finalize empty seats
+        ConsecDivide.apply_empty_seats(rm, chunks)
+
+    @staticmethod
+    def apply_empty_seats(rm, chunks):
+        '''Finished splitting chunk, disable empty seats
         Args:
             rm (Room): Room object.
+            chunks (List[SeatGroup]): List of SeatGroups in room
         '''
-
-        # TODO: Fix
-        row = seat_group.chunk_begin[0]
-        for col in empty_col:
-            rm.set_enable((row, col), False)
+        for chunk in chunks:
+            row = chunk.chunk_begin[0]
+            for col in chunk.empty:
+                rm.set_enable((row, col), False)
 
