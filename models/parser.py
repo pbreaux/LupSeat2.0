@@ -11,8 +11,9 @@ def parse_args():
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
     parser.add_argument("--gout", help="Output image file", default="out.jpg")
     parser.add_argument("--seed", help="Seed", default=int(time.time()))
-    parser.add_argument("--eval", help="Evaluate algorithm")
     parser.add_argument("--algorithm", help="Choose algorithm to use", default="ConsecDivide")
+    parser.add_argument("--eval", help="Evaluate algorithm", action='store_true')
+    parser.add_argument("--nosave", help="Don't save results to files", action='store_true')
     return parser.parse_args()
 
 class SliceFormatter(string.Formatter):

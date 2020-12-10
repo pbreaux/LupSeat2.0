@@ -3,6 +3,7 @@ from models.room import *
 from models.assign import *
 from models.parser import *
 from models.fsave import *
+from models.eval import *
 import random
 
 # Setup
@@ -19,7 +20,12 @@ alg = Algorithm.choose_algorithm(args.algorithm)
 alg.assign_empty_seats(rm, stdts)
 alg.assign_seats_rand(rm, stdts)
 
-# Save output
-save_file(rm, args.out, stdts, args.fmt, args.seed)
-save_gfile(rm, args.gout)
+if args.eval:
+    # Eval
+    eval_chunk_size(rm)
+
+if not args.nosave:
+    # Save output
+    save_file(rm, args.out, stdts, args.fmt, args.seed)
+    save_gfile(rm, args.gout)
 
