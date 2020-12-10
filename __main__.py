@@ -1,3 +1,7 @@
+# Add external libs
+import sys
+sys.path.append('lib')
+
 from models.student import *
 from models.room import *
 from models.assign import *
