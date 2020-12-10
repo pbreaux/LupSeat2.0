@@ -3,7 +3,7 @@ LupSeats assigns seats to students in a smart and automatic away.
 
 ## Instructions
 Run with 
-`python3 main.py students_file seats_file [--partner partner_file] [--out output_file] [--fmt output_format] [--gout output_gfile] [--seed seed_num]`
+`python3 main.py students_file seats_file [--partner partner_file] [--out output_file] [--fmt output_format] [--gout output_gfile] [--seed seed_num] [--algorithm algorithm_type] [--eval] [--nosave]`
 
 -students\_file - A csv file containing first name, middle name, last name, student id, dominant hand, special needs flag (see students.csv for example)
 
@@ -18,6 +18,12 @@ Run with
 -output\_gfile - Name of output image file
 
 -seed\_num - A seed for the randomizer to produce deterministic results.
+
+-algorithm\_type - Specifies the algorithm (can be chunkincrease or consecdivide)
+
+-eval - A flag to produce evaluation score (average number of students sitting next to each other). Lower score is better.
+
+-nosave - A flag to disable saving output files (used primarily for automated evaluation).
 
 ## Output format string
 The output format string specifies how students are identified in the output file.
