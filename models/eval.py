@@ -3,7 +3,7 @@ def eval_chunk_size(rm):
     chunk_size = 0
     for row in range(rm.max_row):
         for col in range(rm.max_col):
-            if rm.seats[row][col].sid == -1 and chunk_size > 0:
+            if (rm.seats[row][col] == None or rm.seats[row][col].sid == -1) and chunk_size > 0:
                 chunks.append(chunk_size)
                 chunk_size = 0
             else:

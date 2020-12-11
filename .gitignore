@@ -6,5 +6,5 @@ out.jpg
 tests/test.csv
 scripts/testseat.txt
 scripts/teststudents.csv
-*.zip
+lupseat-*
 lib/
