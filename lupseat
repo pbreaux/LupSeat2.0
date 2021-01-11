@@ -1,6 +1,4 @@
-# Add external libs
-import sys
-sys.path.append('lib')
+#!/usr/bin/env python3
 
 from models.student import *
 from models.room import *

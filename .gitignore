@@ -8,3 +8,7 @@ scripts/testseat.txt
 scripts/teststudents.csv
 lupseat-*
 lib/
+
+build/
+dist/
+LupSeat.egg-info/
