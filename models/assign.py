@@ -11,6 +11,8 @@ class Algorithm:
             return ChunkIncrease()
         elif alg == "consecdivide":
             return ConsecDivide()
+        elif alg == "randomassign":
+            return RandomAssign()
         else:
             raise Exception("Algorithm {} Unknown".format(alg))
 
@@ -59,6 +61,12 @@ class Algorithm:
         # Not enough seats for all students
         if len(carry_over_stdts) > 0:
             raise Exception("Not enough seats in room for students")
+
+class RandomAssign(Algorithm):
+    @staticmethod
+    def assign_empty_seats(rm, stdts):
+        pass
+
 
 class ChunkIncrease(Algorithm):
     @staticmethod
