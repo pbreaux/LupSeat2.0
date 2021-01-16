@@ -91,6 +91,14 @@ class ChunkIncrease(Algorithm):
             chk_size_l[-1] -= 1
             chk_size_l.sort()
 
+        # Edge seats should be prioritized
+        swapIndex = 1
+        while chk_size_l[0] == 0:
+            if swapIndex >= len(chk_size_l):
+                break
+            chk_size_l[0], chk_size_l[swapIndex] = chk_size_l[swapIndex] = chk_size_l[0]
+            swapIndex += 1
+
         # Get new empty inds
         empty_inds = []
         seat = 0

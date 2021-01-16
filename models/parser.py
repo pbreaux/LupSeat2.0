@@ -4,14 +4,17 @@ import time
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Assign seats to students automatically.")
+
     parser.add_argument("student", help="CSV file containing student list")
     parser.add_argument("seats", help="Yaml file containing room seating info")
+
     parser.add_argument("--partner", help="CSV file student partner history")
     parser.add_argument("--out", help="Output file", default="out.txt")
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
     parser.add_argument("--gout", help="Output image file", default="out.jpg")
     parser.add_argument("--seed", help="Seed", default=int(time.time()))
     parser.add_argument("--algorithm", help="Choose algorithm to use", default="ConsecDivide")
+
     parser.add_argument("--eval", help="Evaluate algorithm", action='store_true')
     parser.add_argument("--nosave", help="Don't save results to files", action='store_true')
     return parser.parse_args()
