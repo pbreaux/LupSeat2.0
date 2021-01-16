@@ -1,5 +1,6 @@
 # LupSeat
 LupSeats assigns seats to students in a smart and automatic away.
+View pypi link: [pypi.org/project/LupSeat](https://pypi.org/project/LupSeat/)
 
 ## Instructions
 Install with
@@ -36,7 +37,7 @@ lupseat students_file seats_file [OPTS]
 ### Algorithm Types
 * RandomAssign - random assignment of seats
 * ChunkIncrease - slowly increase chunk size (i.e. number of students sitting together) until all students can fit in a room. A bottom up approach.
-* ConsecDivice - consecutively divide the room until all empty seats are allocated. A top down approach.
+* ConsecDivice (Default) - consecutively divide the room until all empty seats are allocated. A top down approach.
 
 ### Output format string
 The output format string specifies how students are identified in the output file.
@@ -53,7 +54,7 @@ Variable names in format string must be encased by brackets, and can be sliced u
 `{fname|0}.{lname|0}.`
 
 ## Unit Tests
-Run unit tests with `python3 -m unittest tests/*_test.py`
+Run unit tests with `python3 -m unittest unit-tests/*_test.py`
 
 ## Build Instructions
 Building for pip requires `setup_tools`, `wheel`, `tqdm`, and `twine` to be installed with pip.
@@ -62,4 +63,3 @@ python3 setup.py bdist_wheel
 python3 -m twine upload dist/*
 ```
 
-## Architecture
