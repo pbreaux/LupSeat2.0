@@ -6,7 +6,6 @@ SEAT_FILENAME=testseat.txt
 STDT_FILENAME=teststudent.csv
 MAX_NUM_SEATS=500
 ITERATIONS=500
-DEBUG_RATE=10
 
 ALGORITHMS=(randomassign chunkincrease consecdivide)
 LENGTH=${#ALGORITHMS[@]}
@@ -21,8 +20,9 @@ trap clean INT
 
 # EVALUATE
 for i in $(seq 1 $ITERATIONS); do
-	if [[ $(($i % $DEBUG_RATE)) -eq 0 ]]; then
-		echo "Running test $i..."
+	if [[ $DEBUG -eq 0 ]]; then
+		echo -ne "\033[1K"
+		echo -ne "\rRunning test $i..."
 	fi
 	NUM_SEATS=$((1 + $RANDOM % MAX_NUM_SEATS))
 	NUM_STDTS=$((1 + $RANDOM % NUM_SEATS))
@@ -48,7 +48,7 @@ done
 # PRINT RESULTS
 echo "Results over ${ITERATIONS} iterations:"
 for alg in ${!ALGORITHMS[@]}; do 
-	echo ${ALGORITHMS[$alg]}: $(echo "${STATS[$alg]} $LENGTH" | awk '{print $1 / $2}')
+	echo ${ALGORITHMS[$alg]}: $(echo "${STATS[$alg]} $ITERATIONS" | awk '{print $1 / $2}')
 done
 
 
