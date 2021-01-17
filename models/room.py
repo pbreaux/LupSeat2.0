@@ -151,6 +151,7 @@ class Room:
 
                     # Add seat
                     cur_row = chr_to_int(row_range[0])
+                    cur_col = 1
                     for cur_col in get_col_inds(row_range):
                         self.seats[cur_row-1][cur_col-1] = Seat()
 

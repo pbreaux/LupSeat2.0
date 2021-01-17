@@ -56,6 +56,13 @@ Variable names in format string must be encased by brackets, and can be sliced u
 ## Unit Tests
 Run unit tests with `python3 -m unittest unit-tests/*_test.py`
 
+## Fuzz Test & Algorithm Evaluation
+Run fuzz test with `cd scripts && ./alg_evaluator.sh`.
+This will produce run 500 tests with randomized seats and students for each algorithm, then average out the evaluation scores (see --eval).
+
+
+The lowest score is the best performing test.
+
 ## Build Instructions
 Building for pip requires `setup_tools`, `wheel`, `tqdm`, and `twine` to be installed with pip.
 ```

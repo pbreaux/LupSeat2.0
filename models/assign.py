@@ -96,7 +96,7 @@ class ChunkIncrease(Algorithm):
         while chk_size_l[0] == 0:
             if swapIndex >= len(chk_size_l):
                 break
-            chk_size_l[0], chk_size_l[swapIndex] = chk_size_l[swapIndex] = chk_size_l[0]
+            chk_size_l[0], chk_size_l[swapIndex] = chk_size_l[swapIndex], chk_size_l[0]
             swapIndex += 1
 
         # Get new empty inds
@@ -193,7 +193,7 @@ class ChunkIncrease(Algorithm):
         Returns:
             int: Minimum "max size of chunk" necessary to create chunks to fit everybody in the room
         '''
-        for chunk_size in range(1, num_students):
+        for chunk_size in range(1, num_students+1):
             num_seats_filled = 0
             for chunk in chunks:
                 num_seats_filled += ChunkIncrease.get_possible_seats(chunk, chunk_size)
