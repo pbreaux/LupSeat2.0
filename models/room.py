@@ -132,6 +132,7 @@ class Room:
             self.seats.append([None] * self.max_col)
 
         seat_flag = False
+        infer_row_num = 0
         for line in f_raw.splitlines():
             line = process_str(line)
             if line == "seats" or line == "seat":
@@ -143,10 +144,15 @@ class Room:
                 if line == "":
                     continue
 
+                # Update inference
+                infer_row_num += 1
+
                 # Add seats per each range
                 for row_range in line.split(','):
                     # Skip if empty range
                     if row_range == '':
+                        # Infer row from previous rows
+                        self.row_breaks[infer_row_num-1].append(0)
                         continue
 
                     # Add seat
@@ -250,7 +256,7 @@ class Room:
     def split_to_chunks(self):
         '''Splits seats into SeatGroup chunks if they are continuous and not broken.
         Returns:
-            List[SeatGroups]: List of SeatGropus representing preliminary chunk.
+            List[SeatGroups]: List of SeatGroups representing preliminary chunk.
         '''
         # Populate chunks assuming infinite max_chunk_size
         chunks = []
