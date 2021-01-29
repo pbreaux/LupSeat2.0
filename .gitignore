@@ -1,8 +1,6 @@
 *.pyc
 __pycache__/
 venv/
-out.txt
-out.jpg
 tests/test.csv
 scripts/testseat.txt
 scripts/teststudents.csv
@@ -12,3 +10,7 @@ lib/
 build/
 dist/
 LupSeat.egg-info/
+
+*.txt
+*.jpg
+*.png

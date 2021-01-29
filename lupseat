@@ -28,6 +28,7 @@ if args.eval:
 
 if not args.nosave:
     # Save output
-    save_file(rm, args.out, stdts, args.fmt, args.seed)
-    save_gfile(rm, args.gout)
+    save_chart(rm, args.out, stdts, args.fmt, args.seed)
+    save_gchart(rm, args.g_chart, stdts, args.fmt, args.seed)
+    save_groom(rm, args.g_room)
 

@@ -9,9 +9,10 @@ def parse_args():
     parser.add_argument("seats", help="Yaml file containing room seating info")
 
     parser.add_argument("--partner", help="CSV file student partner history")
-    parser.add_argument("--out", help="Output file", default="out.txt")
+    parser.add_argument("--out", help="Output file", default="chart.txt")
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
-    parser.add_argument("--gout", help="Output image file", default="out.jpg")
+    parser.add_argument("--g_chart", help="Output image file for student chart", default="chart.jpg")
+    parser.add_argument("--g_room", help="Output image file for room image", default="room.jpg")
     parser.add_argument("--seed", help="Seed", default=int(time.time()))
     parser.add_argument("--algorithm", help="Choose algorithm to use", default="ConsecDivide")
 
