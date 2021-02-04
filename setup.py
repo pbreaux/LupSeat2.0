@@ -23,4 +23,9 @@ setuptools.setup(
             "License :: OSI Approved :: MIT License",
             "Operating System :: OS Independent",
         ],
+        install_requires=[
+            'Pillow>=8.0.1',
+            'fpdf>=1.7.2',
+        ],
+    }
 )
