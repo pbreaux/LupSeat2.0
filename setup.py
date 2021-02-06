@@ -26,6 +26,7 @@ setuptools.setup(
         install_requires=[
             'Pillow>=8.0.1',
             'fpdf>=1.7.2',
+            'papersize>=1.0.1',
         ],
     }
 )

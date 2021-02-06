@@ -2,9 +2,19 @@ from PIL import Image, ImageDraw, ImageFont
 from fpdf import FPDF
 import math
 import os
+import papersize
 
 from models.room import *
 from models.parser import *
+
+def papersize_to_imagesize(image_size):
+    if "flip" in image_size:
+        if image_size.split(' ')[0] == "flip":
+            paperformat = image_size.split(' ')[1]
+        else:
+            paperformat = image_size.split(' ')[0]
+        return tuple(map(lambda x: int(x)*2, papersize.parse_papersize(paperformat, unit="pt")))[::-1]
+    return tuple(map(lambda x: int(x)*2, papersize.parse_papersize(image_size, unit="pt")))
 
 def get_stdt_list(rm, stdts, str_form, sort_by=0):
     stdt_list = []
@@ -113,6 +123,7 @@ def calc_chart_im_specs(image_size, margin_ratio, stdt_list):
     return margin, top_margin, title_font_size, font_size, text_margin, max_len_seats, max_len_str, height, width_1, width_2, row_margin
 
 def save_gchart(rm, filepath, image_size, stdts, str_form, seed, stdt_sort):
+    image_size = papersize_to_imagesize(image_size)
     stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=1 if stdt_sort else 0)
 
     images = [Image.new("RGB", image_size, "white")]
@@ -249,6 +260,7 @@ def save_groom(rm, filepath, image_size):
     separator_ratio = 0.2
 
     # Algorithmically calculate size info
+    image_size = papersize_to_imagesize(image_size)
     seat_ratio = (seat_space_ratio, seat_size_ratio, separator_ratio)
     res = calc_room_im_specs(rm, image_size, margin_ratio, font_ratio, seat_ratio)
     (margin, top_margin, title_font_size, key_font_size, key_box_size, row_separator_size, seat_size, seat_margin, font_margin, key_margin, font_size) = res
