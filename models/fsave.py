@@ -52,7 +52,7 @@ def save_chart(rm, filepath, stdts, str_form, seed, stdt_sort):
 
     with open(filepath, 'w') as outfile:
         for stdt_fmt in stdt_list:
-            outfile.write(": ".join(stdt_fmt) + '\n')
+            outfile.write(",".join(stdt_fmt) + '\n')
         outfile.write("\nSeed:{}\n".format(seed))
 
     print("Finished saving to file: {}".format(filepath))

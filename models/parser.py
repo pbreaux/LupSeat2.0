@@ -5,11 +5,11 @@ import time
 def parse_args():
     parser = argparse.ArgumentParser(description="Assign seats to students automatically.")
 
-    parser.add_argument("student", help="CSV file containing student list")
-    parser.add_argument("seats", help="Yaml file containing room seating info")
-
+    parser.add_argument("--student", help="CSV file containing student list", default="student.csv")
+    parser.add_argument("--seats", help="Yaml file containing room seating info", default="room.txt")
+    parser.add_argument("--gui", help="Opens GUI", action='store_true')
     parser.add_argument("--partner", help="CSV file student partner history")
-    parser.add_argument("--out", help="Output file", default="chart.txt")
+    parser.add_argument("--out", help="Output file", default="chart.csv")
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
     parser.add_argument("--g_chart", help="Output pdf file for student chart", default="chart.pdf")
     parser.add_argument("--stdt_sort", help="Sort the output chart by student key intead of by seating key", action='store_true')
@@ -17,7 +17,9 @@ def parse_args():
     parser.add_argument("--g_room", help="Output image file for room image", default="room.jpg")
     parser.add_argument("--g_room_size", help="Image size of output room", default="a4 flip")
     parser.add_argument("--seed", help="Seed", default=int(time.time()))
-    parser.add_argument("--algorithm", choices=["RandomAssign", "ConsecDivide", "ChunkIncrease"], help="Choose algorithm to use", default="ConsecDivide", metavar='')
+    parser.add_argument("--algorithm", type=str.lower, 
+            choices=["randomassign", "consecdivide", "chunkincrease"], 
+            help="Choose algorithm to use", default="ConsecDivide", metavar='')
     parser.add_argument("--eval", help="Evaluate algorithm", action='store_true')
     parser.add_argument("--nosave", help="Don't save results to files", action='store_true')
     return parser.parse_args()
