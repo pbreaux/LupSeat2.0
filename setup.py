@@ -28,5 +28,4 @@ setuptools.setup(
             'fpdf>=1.7.2',
             'papersize>=1.0.1',
         ],
-    }
 )
