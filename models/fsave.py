@@ -16,7 +16,8 @@ def papersize_to_imagesize(image_size):
         return tuple(map(lambda x: int(x)*2, papersize.parse_papersize(paperformat, unit="pt")))[::-1]
     return tuple(map(lambda x: int(x)*2, papersize.parse_papersize(image_size, unit="pt")))
 
-def get_stdt_list(rm, stdts, str_form, sort_by=0):
+def get_stdt_list(rm, stdts, str_form, sort_by):
+    # TODO Fix sort_by
     stdt_list = []
     fmt = SliceFormatter()
     for row in range(rm.max_row):
@@ -35,11 +36,24 @@ def get_stdt_list(rm, stdts, str_form, sort_by=0):
             lname = stdts[sid].last
 
             stdt_str = fmt.format(str_form, sid=str(sid), fname=fname, lname=lname)
-            stdt_list.append(["{}{}".format(row_chr.upper(), col_chr), stdt_str])
+            seat_str = "{}{}".format(row_chr.upper(), col_chr)
 
-    return sorted(stdt_list, key=lambda x: x[sort_by])
+            if sort_by == "fname":
+                sort_key = fname
+            if sort_by == "lname":
+                sort_key = lname
+            if sort_by == "sid":
+                sort_key = sid
+            if sort_by == "seat":
+                sort_key = seat_str
+            stdt_list.append([seat_str, stdt_str, sort_key])
 
-def save_chart(rm, filepath, stdts, str_form, seed, stdt_sort):
+    stdt_list = sorted(stdt_list, key=lambda x: x[2])
+    stdt_list = list(map(lambda x: x[:2], stdt_list))
+
+    return stdt_list
+
+def save_chart(rm, filepath, stdts, str_form, seed, sort_by):
     """Saves seats with student info to a file
 
     Args:
@@ -48,7 +62,7 @@ def save_chart(rm, filepath, stdts, str_form, seed, stdt_sort):
         str_form (str): output format for each student, specified by user
         seed (int): seed for randomizer
     """
-    stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=1 if stdt_sort else 0)
+    stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=sort_by)
 
     with open(filepath, 'w') as outfile:
         for stdt_fmt in stdt_list:
@@ -122,9 +136,9 @@ def calc_chart_im_specs(image_size, margin_ratio, stdt_list):
 
     return margin, top_margin, title_font_size, font_size, text_margin, max_len_seats, max_len_str, height, width_1, width_2, row_margin
 
-def save_gchart(rm, filepath, image_size, stdts, str_form, seed, stdt_sort):
+def save_gchart(rm, filepath, image_size, stdts, str_form, seed, sort_by):
     image_size = papersize_to_imagesize(image_size)
-    stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=1 if stdt_sort else 0)
+    stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=sort_by)
 
     images = [Image.new("RGB", image_size, "white")]
     d_ctx = ImageDraw.Draw(images[0])

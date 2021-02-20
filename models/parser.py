@@ -12,7 +12,9 @@ def parse_args():
     parser.add_argument("--out", help="Output file", default="chart.csv")
     parser.add_argument("--fmt", help="Output format string", default="{sid}")
     parser.add_argument("--g_chart", help="Output pdf file for student chart", default="chart.pdf")
-    parser.add_argument("--stdt_sort", help="Sort the output chart by student key intead of by seating key", action='store_true')
+    parser.add_argument("--sort_by", type=str.lower, 
+            choices=["fname", "lname", "sid", "seat"], default="seat", 
+            help="Sort the output chart", metavar='')
     parser.add_argument("--g_chart_size", help="Image size of output chart", default="a4")
     parser.add_argument("--g_room", help="Output image file for room image", default="room.jpg")
     parser.add_argument("--g_room_size", help="Image size of output room", default="a4 flip")
