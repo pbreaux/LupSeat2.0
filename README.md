@@ -76,6 +76,10 @@ Since Mac has python installed by default, the executable only makes sure lupsea
 ### Build for Windows
 First install lupseat and pyinstaller with python-pip.
 
+```
+py -m pip install lupseat pyinstaller
+```
+
 Next, navigate to `C:\Users\{user}\AppData\Local\Programs\Python\Python39\Scripts` and run the following command
 
 ```
