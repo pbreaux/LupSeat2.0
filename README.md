@@ -70,3 +70,17 @@ python3 setup.py bdist_wheel
 python3 -m twine upload dist/*
 ```
 
+### Build for Mac
+Since Mac has python installed by default, the executable only makes sure lupseat is installed via pip, then calls the lupseat command.
+
+### Build for Windows
+First install lupseat and pyinstaller with python-pip.
+
+Next, navigate to `C:\Users\{user}\AppData\Local\Programs\Python\Python39\Scripts` and run the following command
+
+```
+.\pyinstaller.exe --onefile --noconsole lupseat
+```
+
+The exe file generated in the dist\\ directory is a standalone executable.
+
