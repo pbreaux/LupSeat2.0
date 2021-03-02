@@ -1,7 +1,6 @@
 *.pyc
 __pycache__/
 venv/
-exec/
 tests/test.csv
 scripts/testseat.txt
 scripts/teststudents.csv
