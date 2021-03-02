@@ -123,18 +123,14 @@ def start_gui(args):
             font=tkFont.Font(size=10), bg=default_bg).grid(row=c.inc(), column=0, padx=basic_margin, pady=5, columnspan=3, sticky="W")
 
     tk.Label(text="Sort Output By", font=tkFont.Font(size=15), bg=default_bg).grid(row=c.inc(), column=0, padx=basic_margin, pady=5, sticky="W")
-    tk.OptionMenu(window, sort_by, "fname", "lname", "sid", "seat").grid(row=c.same(), column=1, padx=basic_margin, sticky="W")
+    tk.OptionMenu(window, sort_by, "fname", "lname", "sid", "seat").grid(row=c.same(), column=1, padx=basic_margin+18, sticky="W")
 
     tk.Label(text="Seed", font=tkFont.Font(size=15), bg=default_bg).grid(row=c.inc(), column=0, padx=basic_margin, pady=5, sticky="W")
     tk.Entry(textvariable=seed).grid(row=c.same(), column=1, padx=basic_margin)
     tk.ttk.Button(text="Generate new seed", command=regenerate_seed).grid(row=c.same(), column=2, padx=basic_margin, sticky="W")
 
     tk.Label(window, text="Choose the algorithm", font=tkFont.Font(size=15), bg=default_bg).grid(row=c.inc(), column=0, padx=basic_margin, pady=5, sticky="W")
-    tk.OptionMenu(window, algorithm, "consecdivide", "chunkincrease", "randomassign").grid(row=c.same(), column=1, padx=basic_margin, sticky="W")
-
-#    tk.Radiobutton(window, text="ConsecDivide", variable=algorithm, value="consecdivide", bg=default_bg).grid(row=c.inc(), column=0, padx=20, sticky="W")
-#    tk.Radiobutton(window, text="ChunkIncrease", variable=algorithm, value="chunkincrease", bg=default_bg).grid(row=c.inc(), column=0, padx=20, sticky="W")
-#    tk.Radiobutton(window, text="RandomAssign", variable=algorithm, value="randomassign", bg=default_bg).grid(row=c.inc(), column=0, padx=20, sticky="W")
+    tk.OptionMenu(window, algorithm, "consecdivide", "chunkincrease", "randomassign").grid(row=c.same(), column=1, padx=basic_margin+18, sticky="W")
 
     window.grid_rowconfigure(c.inc(), minsize=25)
 
