@@ -1,0 +1,19 @@
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
+
+stages:
+  - build
+
+build:
+  extends:
+    - .shared_windows_runners
+  stage: build
+  script:
+    - powershell ".\winbuild.ps1"
+  artifacts:
+    paths:
+      - exec
+
