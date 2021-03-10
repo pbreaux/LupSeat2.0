@@ -208,7 +208,6 @@ class Room:
                 seat_inds = list(map(range_seat_inds, line.split(':')[1].split(',')))
                 flat_seat_inds = [item for sublist in seat_inds for item in sublist]
 
-
                 for cur_row, cur_col in flat_seat_inds:
                     if self.seats[cur_row-1][cur_col-1] == None:
                         raise Exception("Adding quality to seat that doesn't exist {}".format(line))
@@ -223,6 +222,22 @@ class Room:
 
     def add_student(self, indices, sid):
         self.seats[indices[0]][indices[1]].sid = sid
+
+    def check_neighbors_safe(self, indices, partner_sids):
+        # Check to the left
+        if indices[1] != 0:
+            if self.seats[indices[0]][indices[1]-1] == None:
+                pass
+            elif self.seats[indices[0]][indices[1]-1].sid in partner_sids:
+                return False
+
+        # Check to the right
+        if indices[1] != len(self.seats[0]) - 1:
+            if self.seats[indices[0]][indices[1]+1] == None:
+                pass
+            elif self.seats[indices[0]][indices[1]+1].sid in partner_sids:
+                return False
+        return True
 
     def set_enable(self, indices, val):
         self.seats[indices[0]][indices[1]].enable = val

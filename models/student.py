@@ -46,7 +46,7 @@ class Student:
             for row in csv_reader:
                 for i, stdt_id in enumerate(row):
                     # Add all other sids (except for yourself)
-                    stdts[stdt_id].past_partners = row[:i] + row[i+1:]
+                    stdts[int(stdt_id)].past_partners = row[:i] + row[i+1:]
         return stdts
 
     def __init__(self, stdt):
