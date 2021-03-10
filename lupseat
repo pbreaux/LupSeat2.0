@@ -10,9 +10,6 @@ from models.gui import *
 import random
 import sys
 
-# Number of times to try the seat assignment
-NUM_ITRS = 5
-
 def main():
     # Setup
     args = parse_args()
@@ -30,12 +27,7 @@ def main():
     # Assign seats
     alg = Algorithm.choose_algorithm(args.algorithm)
     alg.assign_empty_seats(rm, stdts)
-
-    # Try to assign seats several times
-    itr = 0
-    while not alg.assign_seats_rand(rm, stdts, itr == NUM_ITRS):
-        itr += 1
-
+    alg.iterative_assign_seats_rand(rm, stdts)
 
     if args.eval:
         # Eval

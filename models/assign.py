@@ -24,6 +24,20 @@ class Algorithm:
         return ele
 
     @staticmethod
+    def iterative_assign_seats_rand(rm, stdts, num_itrs = 5):
+        '''Attempt to assign seatst several times.
+        When there is a conflict due to partners being forced to sit next to each other,
+        the algorithm will retry.
+
+        Args:
+            rm (Room): Room instance
+            stdts (Dict{Student}): Dictionary of students, specified by SID
+        '''
+        itr = 0
+        while not Algorithm.assign_seats_rand(rm, stdts, itr == num_itrs):
+            itr += 1
+
+    @staticmethod
     def assign_seats_rand(rm, stdts, last_try=False):
         '''Assign seats based on specificity, from most specific to least. 
         Room class controls which seats are available for students.
