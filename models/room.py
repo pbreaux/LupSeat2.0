@@ -31,6 +31,23 @@ def seat_inds(seat):
     cur_col = int(seat[1:])
     return (cur_row, cur_col)
 
+def range_seat_inds(seats):
+    ''' Get seat indices, handles ranges as well'''
+    if '-' in seats:
+        seat_pos1 = seat_inds(seats.split('-')[0])
+        seat_pos2 = seat_inds(seats.split('-')[1])
+        if seat_pos1[0] != seat_pos2[0] or seat_pos1[1] >= seat_pos2[1]:
+            raise Exception("Range {} is malformed".format(seats))
+
+        list_of_seats = []
+        cur_row = seat_pos1[0]
+        for cur_col in range(int(seat_pos1[1]), int(seat_pos2[1]) + 1):
+            list_of_seats.append((cur_row, cur_col))
+
+        return list_of_seats
+    else:
+        return [seat_inds(seats)]
+
 def process_str(raw_str):
     '''Removes all whitespace and makes lowercase. Removes any trailing colons'''
     if raw_str == '':
@@ -182,17 +199,23 @@ class Room:
                 if len(line.split(':')) != 2:
                     raise Exception("Line not formatted correctly: {}".format(line))
 
-                # Get seat indices
-                cur_row, cur_col = seat_inds(line.split(':')[0])
-                if self.seats[cur_row-1][cur_col-1] == None:
-                    raise Exception("Adding quality to seat that doesn't exist {}".format(line))
+                # Get flag
+                flag = line.split(':')[0]
+                if flag not in 'bls' and len(flag) != 1:
+                    raise Exception("Flag must be B, L, or S: {}".format(line))
 
-                # Apply flag to seat
-                flags = line.split(':')[1]
-                for flag in flags:
+                # Get list of seats to apply flag to
+                seat_inds = list(map(range_seat_inds, line.split(':')[1].split(',')))
+                flat_seat_inds = [item for sublist in seat_inds for item in sublist]
+
+
+                for cur_row, cur_col in flat_seat_inds:
+                    if self.seats[cur_row-1][cur_col-1] == None:
+                        raise Exception("Adding quality to seat that doesn't exist {}".format(line))
+
+                    # Apply flag to seats
                     if flag == 'b':
                         self.seats[cur_row-1][cur_col-1].broken = True
-                        # If broken, need to split seats
                     if flag == 'l':
                         self.seats[cur_row-1][cur_col-1].left_handed = True
                     if flag == 's':
