@@ -17,8 +17,6 @@ build:
   artifacts:
     paths:
       - exec
-  only:
-    - master
 
 pages:
   image: alpine:latest

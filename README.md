@@ -1,5 +1,6 @@
 # LupSeat
 LupSeats assigns seats to students in a smart and automatic away.
+View gitlab pages link: [luplab.gitlab.io/lupseat/](https://luplab.gitlab.io/lupseat/)
 View pypi link: [pypi.org/project/LupSeat](https://pypi.org/project/LupSeat/)
 
 ## Instructions
@@ -10,7 +11,7 @@ pip3 install lupseat
 
 Run with 
 ```
-lupseat students_file seats_file [OPTS]
+lupseat --student students_file --seats seats_file [OPTS]
 ```
 
 ### Required Args
@@ -24,11 +25,23 @@ lupseat students_file seats_file [OPTS]
 
 * `--fmt output_format_string`
 
-* `--gout output_image_file_name`
+* `--sort_by sort_criteria`
+
+* `--g_chart output_chart_image_file_name`
+
+* `--g_room output_image_file_name`
+
+* `--g_chart_size output_chart_image_size`
+
+* `--g_room_size output_image_size`
 
 * `--seed seed_for_rand`
 
 * `--algorithm algorithm_type`
+
+* `--partner partner_file` - Specifies whiich students have worked together as partners before.
+
+* `--gui` - A flag to open GUI mode.
 
 * `--eval` - A flag to produce evaluation score (average number of students sitting next to each other). Lower score is better.
 
@@ -38,6 +51,12 @@ lupseat students_file seats_file [OPTS]
 * RandomAssign - random assignment of seats
 * ChunkIncrease - slowly increase chunk size (i.e. number of students sitting together) until all students can fit in a room. A bottom up approach.
 * ConsecDivice (Default) - consecutively divide the room until all empty seats are allocated. A top down approach.
+
+### Sort Criteria
+Sorting can be done via fname, lname, sid, or seat.
+
+### Image Sizes
+Image sizes can be done by specifying a standard paper size (e.g. A4). Then, an extra keyword "flip" can be appended to the argument to flip between landscape and portrait.
 
 ### Output format string
 The output format string specifies how students are identified in the output file.
