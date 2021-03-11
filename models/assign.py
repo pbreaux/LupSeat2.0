@@ -17,14 +17,28 @@ class Algorithm:
             raise Exception("Algorithm {} Unknown".format(alg))
 
     @staticmethod
-    def choose_seat(seat_inds):
+    def choose_rand_ele(seat_inds):
         '''Randomly choose seat from list and remove it.'''
         ele = random.choice(seat_inds)
         seat_inds.remove(ele)
         return ele
 
     @staticmethod
-    def assign_seats_rand(rm, stdts):
+    def iterative_assign_seats_rand(rm, stdts, num_itrs = 5):
+        '''Attempt to assign seatst several times.
+        When there is a conflict due to partners being forced to sit next to each other,
+        the algorithm will retry.
+
+        Args:
+            rm (Room): Room instance
+            stdts (Dict{Student}): Dictionary of students, specified by SID
+        '''
+        itr = 0
+        while not Algorithm.assign_seats_rand(rm, stdts, itr == num_itrs):
+            itr += 1
+
+    @staticmethod
+    def assign_seats_rand(rm, stdts, last_try=False):
         '''Assign seats based on specificity, from most specific to least. 
         Room class controls which seats are available for students.
         Room class is mutated to include SID of student sitting there.
@@ -33,6 +47,7 @@ class Algorithm:
         Args:
             rm (Room): Room instance
             stdts (Dict{Student}): Dictionary of students, specified by SID
+            last_try (bool): If true, we shouldn't try to restart to find a better seat config
         '''
         # In decreasing order of specificity
         params = [{'left_hand':True, 'special_needs':True},
@@ -56,11 +71,30 @@ class Algorithm:
                     carry_over_stdts = spec_and_carry_stdts[index:]
                     break
 
-                rm.add_student(Algorithm.choose_seat(seat_inds), stdt_id)
+                # Choose a random seat
+                chosen_seat = Algorithm.choose_rand_ele(seat_inds)
+
+                # Check that neighboring seats don't have a SID from partner_list
+                not_chosen_seats = []
+                while not rm.check_neighbors_safe(chosen_seat, stdts[stdt_id].past_partners):
+                    not_chosen_seats.append(chosen_seat)
+                    if len(seat_inds) == 0:
+                        # Redo assign_seats_rand OR just choose one of the other seats
+                        if last_try:
+                            chosen_seat = not_chosen_seats.pop()
+                            break
+                        return False
+                    chosen_seat = Algorithm.choose_rand_ele(seat_inds)
+                seat_inds += not_chosen_seats
+
+                # Add student to seat
+                rm.add_student(chosen_seat, stdt_id)
 
         # Not enough seats for all students
         if len(carry_over_stdts) > 0:
             raise Exception("Not enough seats in room for students")
+
+        return True
 
 class RandomAssign(Algorithm):
     @staticmethod

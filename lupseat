@@ -27,7 +27,7 @@ def main():
     # Assign seats
     alg = Algorithm.choose_algorithm(args.algorithm)
     alg.assign_empty_seats(rm, stdts)
-    alg.assign_seats_rand(rm, stdts)
+    alg.iterative_assign_seats_rand(rm, stdts)
 
     if args.eval:
         # Eval

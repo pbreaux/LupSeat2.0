@@ -6,6 +6,7 @@
 
 stages:
   - build
+  - deploy
 
 build:
   extends:
@@ -16,4 +17,14 @@ build:
   artifacts:
     paths:
       - exec
+  only:
+    - master
 
+pages:
+  image: alpine:latest
+  stage: deploy
+  script: 
+  - echo 'Building pages'
+  artifacts:
+    paths:
+      - public
