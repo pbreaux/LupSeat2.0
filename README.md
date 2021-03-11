@@ -1,6 +1,8 @@
 # LupSeat
 LupSeats assigns seats to students in a smart and automatic away.
+
 View gitlab pages link: [luplab.gitlab.io/lupseat/](https://luplab.gitlab.io/lupseat/)
+
 View pypi link: [pypi.org/project/LupSeat](https://pypi.org/project/LupSeat/)
 
 ## Instructions
@@ -91,6 +93,7 @@ python3 -m twine upload dist/*
 
 ### Build for Mac
 Since Mac has python installed by default, the executable only makes sure lupseat is installed via pip, then calls the lupseat command.
+Note: The mac app can be modified using Automator. In essence, it is a glorified shell script.
 
 ### Build for Windows
 First install lupseat and pyinstaller with python-pip.
