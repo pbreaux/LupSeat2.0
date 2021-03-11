@@ -25,6 +25,6 @@ pages:
   stage: deploy
   script: 
   - echo 'Building pages'
-  artifact:
+  artifacts:
     paths:
       - public
