@@ -272,9 +272,10 @@ class ConsecDivide(Algorithm):
         return total
 
     @staticmethod
-    def get_subchunk_empty(new_subchunks, subchunk_size, remainder, offset):
+    def get_subchunk_empty(chunk_size, new_subchunks, subchunk_size, remainder, offset):
         '''Gets empty seat indiices based on params.
         Args:
+            chunk_size (int): Total size of entire chunk.
             new_subchunks (int): Number of subchunks to split seats into.
             subchunk_size (int): Number of seats per subchunk.
             remainder (int): Left over seats to be distributed into subchunks.
@@ -291,6 +292,12 @@ class ConsecDivide(Algorithm):
             if remainder > 0:
                 cur_subchunk_size += 1
                 remainder -= 1
+
+            empty_seat_ind = cur_subchunk_size + counter + offset
+
+            if empty_seat_ind == chunk_size - 1 and empty_seat_ind - 1 not in empty_list:
+                # Move one over to the left (prioritize the right edge seat)
+                empty_seat_ind -= 1
 
             empty_list.append(cur_subchunk_size + counter + offset)
             counter += cur_subchunk_size + 1
@@ -335,7 +342,7 @@ class ConsecDivide(Algorithm):
             offset = chunks[0].chunk_begin[1]
 
             # Get empty seat indices to split into subchunks
-            chunks[0].empty = ConsecDivide.get_subchunk_empty(new_subchunks, subchunk_size, remainder, offset)
+            chunks[0].empty = ConsecDivide.get_subchunk_empty(chunks[0].size(), new_subchunks, subchunk_size, remainder, offset)
 
             chunks.sort(key=SeatGroups.max_chunk_size, reverse=True)
 
