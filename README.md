@@ -49,6 +49,8 @@ lupseat --student students_file --seats seats_file [OPTS]
 
 * `--nosave` - A flag to disable saving output files (used primarily for automated evaluation).
 
+* `--font font_name` - The name of the TrueType font you want the chart and image to use.
+
 ### Algorithm Types
 * RandomAssign - random assignment of seats
 * ChunkIncrease - slowly increase chunk size (i.e. number of students sitting together) until all students can fit in a room. A bottom up approach.
@@ -66,6 +68,10 @@ The output format string specifies how students are identified in the output fil
 Variable names: sid, fname, lname.
 
 Variable names in format string must be encased by brackets, and can be sliced using the bar operator.
+
+### Font
+By default this is Roboto-Light. If the user specified font cannot be found it will attempt to use Roboto or other similar, commonly found fonts available on different OSes. If no fonts are found it will use the built in Pillow default where the font size cannot be controlled.
+Note: This will check directories for the exact input font name, this is NOT a complete search function. Incomplete or partial font names will not be found, though .ttf will be added to the name if not provided by the user.
 
 #### Examples
 `{fname} {lname} has sid {sid}`

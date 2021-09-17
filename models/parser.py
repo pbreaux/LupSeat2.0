@@ -24,6 +24,7 @@ def parse_args():
             help="Choose algorithm to use", default="ConsecDivide", metavar='')
     parser.add_argument("--eval", help="Evaluate algorithm", action='store_true')
     parser.add_argument("--nosave", help="Don't save results to files", action='store_true')
+    parser.add_argument("--font", help="Font for chart and image", default="Roboto-Light.ttf")
     return parser.parse_args()
 
 class SliceFormatter(string.Formatter):

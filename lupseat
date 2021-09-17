@@ -33,11 +33,14 @@ def main():
         # Eval
         eval_chunk_size(rm)
 
+    #Set font to use
+    args.font = find_font(args.font)
+
     if not args.nosave:
         # Save output
         save_chart(rm, args.out, stdts, args.fmt, args.seed, args.sort_by)
-        save_gchart(rm, args.g_chart, args.g_chart_size, stdts, args.fmt, args.seed, args.sort_by)
-        save_groom(rm, args.g_room, args.g_room_size)
+        save_gchart(rm, args.g_chart, args.g_chart_size, stdts, args.fmt, args.seed, args.sort_by, args.font)
+        save_groom(rm, args.g_room, args.g_room_size, args.font)
 
     if args.gui:
         done_gui()

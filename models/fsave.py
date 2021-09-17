@@ -7,6 +7,32 @@ import papersize
 from models.room import *
 from models.parser import *
 
+
+#Uses Pillow's built in function to search for TrueType fonts. If no font was specified by user Roboto-Light will be
+#the default. If Roboto cannot be found it will attempt to find the next three most common Roboto similar fonts that
+#are available on different OSes. Finally the default Pillow font will be selected if none are available but this
+#is a last resort as default does not allow font size to be selected. Potentially a list of fonts could be stored
+#to search through to decrease chances of default being used but Pillow does not support searching without filename.
+def find_font(user_font):
+    local_font = user_font
+    try:
+        test_font = ImageFont.truetype(local_font, 8)
+    except OSError:
+        local_font = "LiberationSansNarrow-Regular.ttf"
+        try:
+            test_font = ImageFont.truetype(local_font, 8)
+        except OSError:
+            local_font = "ARIALN.ttf"
+            try:
+                test_font = ImageFont.truetype(local_font, 8)
+            except OSError:
+                local_font = "arial.ttf"
+                try:
+                    test_font = ImageFont.truetype(local_font, 8)
+                except OSError:
+                    local_font = "**default**"
+    return local_font
+
 def papersize_to_imagesize(image_size):
     if "flip" in image_size:
         if image_size.split(' ')[0] == "flip":
@@ -103,18 +129,24 @@ def draw_grid(d_ctx, position, height, width_1, width_2, alternate_flag):
     for line in lines:
         d_ctx.line(line, fill="black", width=1)
 
-def draw_chart_header(d_ctx, seed, margin, title_font_size, font_size, image_size):
+def draw_chart_header(d_ctx, seed, margin, title_font_size, font_size, image_size, user_font):
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, title_font_size)
     # Draw title
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", title_font_size)
     d_ctx.text([margin[0], margin[1]], "Seating Chart", font=font, fill="black")
 
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, font_size)
     # Draw seed
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", font_size)
     x = image_size[0] - margin[0] - font.getsize("Seed: {}".format(seed))[0]
     y = margin[1]
     d_ctx.text([x, y], "Seed: {}".format(seed), font=font, fill="black")
 
-def calc_chart_im_specs(image_size, margin_ratio, stdt_list):
+def calc_chart_im_specs(image_size, margin_ratio, stdt_list, user_font):
     margin = (round(image_size[0] * margin_ratio), round(image_size[1] * margin_ratio))
     top_margin = margin[1]
     title_font_size = round(top_margin / 2)
@@ -123,7 +155,10 @@ def calc_chart_im_specs(image_size, margin_ratio, stdt_list):
     text_margin = font_size
 
     # Get text lengths
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", font_size)
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, font_size)
     max_len_seats = max(map(lambda x: font.getsize(x[0])[0], stdt_list))
     max_len_str = max(map(lambda x: font.getsize(x[1])[0], stdt_list))
 
@@ -136,7 +171,7 @@ def calc_chart_im_specs(image_size, margin_ratio, stdt_list):
 
     return margin, top_margin, title_font_size, font_size, text_margin, max_len_seats, max_len_str, height, width_1, width_2, row_margin
 
-def save_gchart(rm, filepath, image_size, stdts, str_form, seed, sort_by):
+def save_gchart(rm, filepath, image_size, stdts, str_form, seed, sort_by, user_font):
     image_size = papersize_to_imagesize(image_size)
     stdt_list =  get_stdt_list(rm, stdts, str_form, sort_by=sort_by)
 
@@ -144,16 +179,19 @@ def save_gchart(rm, filepath, image_size, stdts, str_form, seed, sort_by):
     d_ctx = ImageDraw.Draw(images[0])
 
     margin_ratio = 0.05
-    res = calc_chart_im_specs(image_size, margin_ratio, stdt_list)
+    res = calc_chart_im_specs(image_size, margin_ratio, stdt_list, user_font)
     (margin, top_margin, title_font_size, font_size, text_margin, max_len_seats, max_len_str, height, width_1, width_2, row_margin) = res
 
-    draw_chart_header(d_ctx, seed, margin, title_font_size, font_size, image_size)
+    draw_chart_header(d_ctx, seed, margin, title_font_size, font_size, image_size, user_font)
 
     position = [0, 0]
     position[0] = margin[0]
     position[1] = margin[1] + top_margin
 
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", font_size)
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, font_size)
     alternate_flag = False
     for stdt in stdt_list:
         # Draw grid
@@ -223,13 +261,14 @@ def calc_room_im_specs(rm, image_size, margin_ratio, font_ratio, seat_ratio):
     return margin, top_margin, title_font_size, key_font_size, key_box_size, row_separator_size, seat_size, seat_margin, font_margin, key_margin, font_size
 
 # For graphical room output
-def draw_room_header(d_ctx, title_font_size, key_font_size, key_margin, margin, image_size, key_box_size):
+def draw_room_header(d_ctx, title_font_size, key_font_size, key_margin, margin, image_size, key_box_size, user_font):
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, title_font_size)
     # Title
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", title_font_size)
     d_ctx.text([margin[0], margin[1]], "Seating Chart", font=font, fill="black")
-
     # Draw labels for key
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", key_font_size)
     lb_length = max(font.getsize("Empty")[0], font.getsize("Taken")[0])
     lb_height = max(font.getsize("Empty")[1], font.getsize("Taken")[1])
     lb_begin_x = image_size[0] - margin[0] - lb_length
@@ -245,7 +284,7 @@ def draw_room_header(d_ctx, title_font_size, key_font_size, key_margin, margin, 
     d_ctx.rectangle([x0, y0+lb_height+key_margin, x1, y1+lb_height+key_margin], fill="lightblue", outline="black")
 
 # For graphical room output
-def draw_seat(d_ctx, label, position, seat_size, fill_color, font_size, font_margin):
+def draw_seat(d_ctx, label, position, seat_size, fill_color, font_size, font_margin, user_font):
     x0 = position[0]
     y0 = position[1]
     x1 = position[0] + seat_size[0]
@@ -255,10 +294,14 @@ def draw_seat(d_ctx, label, position, seat_size, fill_color, font_size, font_mar
 
     fx = x0 + font_margin[0]
     fy = y0 + font_margin[1]
-    font = ImageFont.truetype("assets/Roboto-Light.ttf", font_size)
+
+    if user_font == "**default**":
+        font = ImageFont.load_default()
+    else:
+        font = ImageFont.truetype(user_font, font_size)
     d_ctx.text([fx, fy], label, font=font, fill="black")
 
-def save_groom(rm, filepath, image_size):
+def save_groom(rm, filepath, image_size, user_font):
     """Saves seats with student info to an image file
 
     Args:
@@ -291,7 +334,7 @@ def save_groom(rm, filepath, image_size):
     position[0] = start_position[0]
     position[1] = start_position[1]
 
-    draw_room_header(d_ctx, title_font_size, key_font_size, key_margin, margin, image_size, key_box_size)
+    draw_room_header(d_ctx, title_font_size, key_font_size, key_margin, margin, image_size, key_box_size, user_font)
 
     for row in range(rm.max_row):
         for col in range(rm.max_col):
@@ -302,11 +345,11 @@ def save_groom(rm, filepath, image_size):
             if rm.seats[row][col] == None:
                 pass
             elif rm.seats[row][col].broken:
-                draw_seat(d_ctx, label, position, seat_size, "red", font_size, font_margin)
+                draw_seat(d_ctx, label, position, seat_size, "red", font_size, font_margin, user_font)
             elif rm.seats[row][col].sid == -1:
-                draw_seat(d_ctx, label, position, seat_size, "white", font_size, font_margin)
+                draw_seat(d_ctx, label, position, seat_size, "white", font_size, font_margin, user_font)
             else:
-                draw_seat(d_ctx, label, position, seat_size, "lightblue", font_size, font_margin)
+                draw_seat(d_ctx, label, position, seat_size, "lightblue", font_size, font_margin, user_font)
 
             # Update position
             position[0] += seat_size[0] + seat_margin[0]
